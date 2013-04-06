@@ -2,7 +2,7 @@ language: c
 before_install:
     - sudo apt-get update -qq
     - sudo apt-get install -qq check
-    - wget -q -O /tmp/libsodium.deb http://download.dnscrypt.org/libsodium/releases/libsodium_0.3+fpm0_i386.deb
+    - wget -q -O /tmp/libsodium.deb http://download.dnscrypt.org/libsodium/releases/libsodium_0.3+fpm0_amd64.deb
     - sudo dpkg -i /tmp/libsodium.deb
 script: ./autogen.sh && ./configure && make check
 compiler:
