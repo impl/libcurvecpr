@@ -1,10 +1,14 @@
 AC_PREREQ(2.67)
 AC_INIT(libcurvecpr, 0.1.0, nfontes+libcurvecpr@cynigram.com, libcurvecpr)
-AM_INIT_AUTOMAKE([-Wall -Werror foreign])
+AM_INIT_AUTOMAKE([-Wall -Werror foreign subdir-objects])
 
 AC_CONFIG_SRCDIR([include/server.h])
 AC_CONFIG_HEADER([include/config.h])
 AC_CONFIG_MACRO_DIR([m4])
+
+# Library version.
+CURVECPR_LIBRARY_VERSION=1:0:0
+AC_SUBST(CURVECPR_LIBRARY_VERSION)
 
 # Checks for programs.
 AC_PROG_CC
@@ -37,6 +41,20 @@ AC_CHECK_TYPE([struct timespec], [], [AC_MSG_ERROR([missing struct timespec])], 
 
 # Checks for functions.
 AC_CHECK_FUNCS([clock_gettime], [], [AC_MSG_ERROR([missing clock_gettime])])
+
+# Checks for compiler flags.
+CPPFLAGS="$CPPFLAGS -D_FORTIFY_SOURCE=2"
+AX_APPEND_COMPILE_FLAGS([-fno-strict-aliasing -fno-strict-overflow], [], [-Wno-error])
+AX_CHECK_LINK_FLAG([-fstack-protector], [AX_APPEND_COMPILE_FLAGS([-fstack-protector], [], [-Wno-error])], [], [], [-Wno-error])
+AX_CHECK_LINK_FLAG([-fstack-protector-all], [AX_APPEND_COMPILE_FLAGS([-fstack-protector-all], [], [-Wno-error])], [], [], [-Wno-error])
+AX_APPEND_COMPILE_FLAGS([ dnl
+    -Wall -Wextra -Wcast-qual -Wcast-align -Winline -Wmissing-prototypes -Wmissing-declarations dnl
+    -Wwrite-strings -Wredundant-decls -Wpointer-arith -Wchar-subscripts -Wshadow -Wstrict-prototypes dnl
+    -Wvariable-decl -Winit-self -Wdiv-by-zero -Wsometimes-uninitialized -Wbad-function-cast -Wcomment dnl
+    -Wfloat-equal -Wformat=2 -Wimplicit -Wnormalized=id -Woverride-init -Wparentheses -Wswitch-enum dnl
+    -Wno-unused-parameter dnl
+], [], [-Wno-error])
+AX_APPEND_LINK_FLAGS([-Wl,-z,relro -Wl,-z,now -Wl,-z,noexecstack], [], [-Wno-error])
 
 # Done!
 AC_CONFIG_FILES([Makefile libcurvecpr.pc])

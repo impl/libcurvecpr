@@ -1,16 +1,10 @@
 ACLOCAL_AMFLAGS = -I m4
 
-LIBCURVECPR_API_VERSION = 1:0:0
-
 lib_LTLIBRARIES = libcurvecpr.la
 
 libcurvecpr_la_CPPFLAGS = -I$(top_srcdir)/include
-libcurvecpr_la_CFLAGS = \
-    -Wall -W -Wcast-qual -Wcast-align -Winline -Wmissing-prototypes -Wwrite-strings \
-    -Wredundant-decls -Wpointer-arith -Wchar-subscripts -Wshadow -Wstrict-prototypes -Werror
-libcurvecpr_la_LDFLAGS = -version-info $(LIBCURVECPR_API_VERSION)
+libcurvecpr_la_LDFLAGS = -version-info $(CURVECPR_LIBRARY_VERSION)
 
-AUTOMAKE_OPTIONS = subdir-objects
 libcurvecpr_la_SOURCES = \
     lib/bytes.c \
     lib/chicago.c \

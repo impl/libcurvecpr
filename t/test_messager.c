@@ -3,14 +3,16 @@
 #include "bytes.h"
 #include "messager.h"
 
+static char PRIV[] = "Hello!";
+
 START_TEST (test_new_configures_object)
 {
     struct curvecpr_messager messager;
-    struct curvecpr_messager_cf cf = { .priv = "Hello!" };
+    struct curvecpr_messager_cf cf = { .priv = PRIV };
 
     curvecpr_messager_new(&messager, &cf, 1);
 
-    fail_unless(memcmp("Hello!", messager.cf.priv, 7) == 0);
+    fail_unless(memcmp(PRIV, messager.cf.priv, sizeof(PRIV)) == 0);
     fail_unless(messager.my_maximum_send_bytes == 512);
 }
 END_TEST
