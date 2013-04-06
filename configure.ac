@@ -43,18 +43,22 @@ AC_CHECK_TYPE([struct timespec], [], [AC_MSG_ERROR([missing struct timespec])], 
 AC_CHECK_FUNCS([clock_gettime], [], [AC_MSG_ERROR([missing clock_gettime])])
 
 # Checks for compiler flags.
+CCHECKFLAGS="-Wno-error"
+AX_CHECK_COMPILE_FLAG([-Werror=unknown-warning-option], [CCHECKFLAGS="$CCHECKFLAGS -Werror=unknown-warning-option"], [], [-Werror])
+AX_CHECK_COMPILE_FLAG([-Werror=unused-command-line-argument], [CCHECKFLAGS="$CCHECKFLAGS -Werror=unused-command-line-argument"], [], [-Werror])
+
 CPPFLAGS="$CPPFLAGS -D_FORTIFY_SOURCE=2"
-AX_APPEND_COMPILE_FLAGS([-fno-strict-aliasing -fno-strict-overflow], [], [-Wno-error])
-AX_CHECK_LINK_FLAG([-fstack-protector], [AX_APPEND_COMPILE_FLAGS([-fstack-protector], [], [-Wno-error])], [], [], [-Wno-error])
-AX_CHECK_LINK_FLAG([-fstack-protector-all], [AX_APPEND_COMPILE_FLAGS([-fstack-protector-all], [], [-Wno-error])], [], [], [-Wno-error])
+AX_APPEND_COMPILE_FLAGS([-fno-strict-aliasing -fno-strict-overflow], [], [$CCHECKFLAGS])
+AX_CHECK_LINK_FLAG([-fstack-protector], [AX_APPEND_COMPILE_FLAGS([-fstack-protector], [], [$CCHECKFLAGS])], [], [], [$CCHECKFLAGS])
+AX_CHECK_LINK_FLAG([-fstack-protector-all], [AX_APPEND_COMPILE_FLAGS([-fstack-protector-all], [], [$CCHECKFLAGS])], [], [], [$CCHECKFLAGS])
 AX_APPEND_COMPILE_FLAGS([ dnl
     -Wall -Wextra -Wcast-qual -Wcast-align -Winline -Wmissing-prototypes -Wmissing-declarations dnl
     -Wwrite-strings -Wredundant-decls -Wpointer-arith -Wchar-subscripts -Wshadow -Wstrict-prototypes dnl
     -Wvariable-decl -Winit-self -Wdiv-by-zero -Wsometimes-uninitialized -Wbad-function-cast -Wcomment dnl
     -Wfloat-equal -Wformat=2 -Wimplicit -Wnormalized=id -Woverride-init -Wparentheses -Wswitch-enum dnl
     -Wno-unused-parameter dnl
-], [], [-Wno-error])
-AX_APPEND_LINK_FLAGS([-Wl,-z,relro -Wl,-z,now -Wl,-z,noexecstack], [], [-Wno-error])
+], [], [$CCHECKFLAGS])
+AX_APPEND_LINK_FLAGS([-Wl,-z,relro -Wl,-z,now -Wl,-z,noexecstack], [], [$CCHECKFLAGS])
 
 # Done!
 AC_CONFIG_FILES([Makefile libcurvecpr.pc])
