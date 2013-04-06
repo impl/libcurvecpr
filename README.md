@@ -1,4 +1,4 @@
-# libcurvecpr
+# libcurvecpr [![Build Status](https://travis-ci.org/impl/libcurvecpr.png)](https://travis-ci.org/impl/libcurvecpr)
 
 libcurvecpr is a low-level, networking-independent implementation of Daniel J. Bernstein's [CurveCP](http://curvecp.org/).
 
