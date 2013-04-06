@@ -19,6 +19,8 @@ static int t_sendmarkq_remove_range (struct curvecpr_messager *messager, unsigne
 {
     fail_unless(start == 0);
     fail_unless(end == 1234);
+
+    return 0;
 }
 
 START_TEST (test_recv_requests_removal_from_sendmarkq)
