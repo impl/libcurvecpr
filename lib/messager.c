@@ -389,14 +389,17 @@ static int _send_block (struct curvecpr_messager *messager, struct curvecpr_bloc
                 messager->my_eof = 1;
 
             messager->my_sent_bytes += block->data_len;
-
-            if (cf->ops.sendq_move_to_sendmarkq(messager, block, NULL)) {
-                /* Some sort of warning? This message will get resent next time. */
-            }
         } else {
             /* This is a retransmission, meaning we didn't receive an acknowledgment in
                quite some time. */
             curvecpr_chicago_on_timeout(&messager->chicago);
+        }
+
+        if (cf->ops.sendq_move_to_sendmarkq(messager, block, NULL)) {
+            /* This could fail if the message has already been sent (i.e., it was already
+               moved to the to-be-marked queue), but we must call it any time block is
+               sent because it could fail for any other arbitrary reason as well and need
+               to be reinvoked. */
         }
     }
 
