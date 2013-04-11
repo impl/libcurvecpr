@@ -61,5 +61,11 @@ AX_APPEND_COMPILE_FLAGS([ dnl
 AX_APPEND_LINK_FLAGS([-Wl,-z,relro -Wl,-z,now -Wl,-z,noexecstack], [], [$CCHECKFLAGS])
 
 # Done!
-AC_CONFIG_FILES([Makefile libcurvecpr.pc])
+AC_CONFIG_FILES([
+    Makefile
+    include/Makefile
+    lib/Makefile
+    t/Makefile
+    libcurvecpr.pc
+])
 AC_OUTPUT
