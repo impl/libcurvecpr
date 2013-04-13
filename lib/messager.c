@@ -19,14 +19,6 @@
 
 #define _STOP (_STOP_SUCCESS + _STOP_FAILURE)
 
-static unsigned long long _acknowledgment_range_gap_sizes[] = {
-    UINT32_MAX,
-    UINT16_MAX,
-    UINT16_MAX,
-    UINT16_MAX,
-    UINT16_MAX
-};
-
 /* This is the wire format for a message. It's only used internally here. */
 struct _message {
     unsigned char id[4];
@@ -113,8 +105,13 @@ int curvecpr_messager_recv (struct curvecpr_messager *messager, const unsigned c
         /* Range 1. */
         start = 0;
         end = curvecpr_bytes_unpack_uint64(message->acknowledging_range_1_size);
-        if (start - end > 0)
+        if (start - end > 0) {
             cf->ops.sendmarkq_remove_range(messager, start, end);
+
+            /* If we're at EOF, see if we can move to a final state. */
+            if (messager->my_eof && end >= messager->my_sent_bytes)
+                messager->my_final = 1;
+        }
 
         /* Range 2. */
         start = end + (unsigned long long)curvecpr_bytes_unpack_uint32(message->acknowledging_range_12_gap);
@@ -232,7 +229,7 @@ static int _send_block (struct curvecpr_messager *messager, struct curvecpr_bloc
 
     crypto_uint32 id = 0;
 
-    struct { unsigned char exists; unsigned long long start; unsigned long long end; } acknowledgment_ranges[6] = { { .exists = 0, .start = 0, .end = 0 } };
+    struct { unsigned char exists; crypto_uint64 start; crypto_uint64 end; } acknowledgment_ranges[6] = { { .exists = 0, .start = 0, .end = 0 } };
 
     /* NB: It is perfectly acceptable for block to be null in this function. */
 
@@ -262,44 +259,40 @@ static int _send_block (struct curvecpr_messager *messager, struct curvecpr_bloc
     /* Write range acknowledgments. */
     {
         struct curvecpr_block *received_block = NULL;
-        unsigned int received_block_num = 0;
-        int i = 0;
+        int block_num = 0, i = 0;
 
-        /* XXX: Should really figure out a better way to do this. */
+        crypto_uint64 check = messager->their_contiguous_sent_bytes;
+        unsigned long long maximum_gap = UINT32_MAX;
+
         for (;;) {
-            if (cf->ops.recvmarkq_get(messager, received_block_num++, &received_block))
-                /* Less than 6 ranges to acknowledge! */
+            if (cf->ops.recvmarkq_get(messager, block_num++, &received_block))
                 break;
 
-            if (!acknowledgment_ranges[i].exists) {
-                /* This basically only happens for the first block in the first range. */
+            acknowledgment_ranges[i].exists = 1;
+
+            if (received_block->offset > check) {
+                acknowledgment_ranges[i].end = check;
+
+                if (!(i < 5))
+                    /* Can't fit any more acknowledgments in this message. */
+                    break;
+                else if (received_block->offset - check > maximum_gap)
+                    /* Gap is too large... need more packets! */
+                    break;
+
+                i++;
                 acknowledgment_ranges[i].exists = 1;
                 acknowledgment_ranges[i].start = received_block->offset;
                 acknowledgment_ranges[i].end = received_block->offset + received_block->data_len;
-            } else if (received_block->offset == acknowledgment_ranges[i].end) {
-                /* Continuation of the previous block. Just add. */
-                acknowledgment_ranges[i].end += received_block->data_len;
-            } else if (i < 5) {
-                /* Doesn't fit at all. */
-                unsigned long long maximum_gap = _acknowledgment_range_gap_sizes[i];
-                if (received_block->offset - acknowledgment_ranges[i].end > maximum_gap) {
-                    /* The gap is too large! We'll have to send another acknowledgment
-                       later. */
-                    break;
-                } else if (received_block->data_len > UINT16_MAX) {
-                    /* Range size is too large! */
-                    break;
-                } else {
-                    /* Add a new range. */
-                    ++i;
-                    acknowledgment_ranges[i].exists = 1;
-                    acknowledgment_ranges[i].start = received_block->offset;
-                    acknowledgment_ranges[i].end = received_block->offset + received_block->data_len;
-                }
+
+                maximum_gap = UINT16_MAX;
             } else {
-                /* End of the line. We can't fit any more acknowledgments in. */
-                break;
+                crypto_uint64 received_block_end = received_block->offset + received_block->data_len;
+
+                acknowledgment_ranges[i].end = check > received_block_end ? check : received_block_end;
             }
+
+            check = acknowledgment_ranges[i].end;
         }
 
         if (acknowledgment_ranges[0].exists) {
@@ -409,7 +402,15 @@ static int _send_block (struct curvecpr_messager *messager, struct curvecpr_bloc
 
         for (i = 0; i < 6 && acknowledgment_ranges[i].exists; ++i)
             cf->ops.recvmarkq_move_range_to_recvq(messager, acknowledgment_ranges[i].start, acknowledgment_ranges[i].end);
+
     }
+
+    if (acknowledgment_ranges[0].exists)
+        messager->their_contiguous_sent_bytes = acknowledgment_ranges[0].end;
+
+    /* The remote side is in a final state if we've acknowledged their EOF. */
+    if (messager->their_eof && messager->their_contiguous_sent_bytes >= messager->their_total_bytes)
+        messager->their_final = 1;
 
     /* Update the last sent time for timeout calcuations. */
     messager->my_sent_clock = messager->chicago.clock;

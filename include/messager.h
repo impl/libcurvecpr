@@ -58,6 +58,8 @@ struct curvecpr_messager {
     unsigned char their_eof;
     unsigned char their_final;
 
+    crypto_uint64 their_contiguous_sent_bytes;
+
     size_t their_total_bytes;
 };
 
