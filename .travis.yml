@@ -9,8 +9,8 @@ env:
     - USE_LIBGLIB=yes
 before_script:
     - ./autogen.sh
-    - sh -c '[ "$USE_LIBGLIB" = "yes" ] && ./configure --with-libglib CFLAGS="-Werror"'
-    - sh -c '[ "$USE_LIBGLIB" = "no" ] && ./configure --without-libglib CFLAGS="-Werror"'
+    - sh -c 'if [ "$USE_LIBGLIB" = "yes" ]; then ./configure --with-libglib CFLAGS="-Werror"; fi'
+    - sh -c 'if [ "$USE_LIBGLIB" = "no" ]; then ./configure --without-libglib CFLAGS="-Werror"; fi'
 script: make check
 compiler:
     - clang
