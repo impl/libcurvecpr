@@ -4,7 +4,14 @@ before_install:
     - sudo apt-get install -qq check
     - wget -q -O /tmp/libsodium.deb http://download.dnscrypt.org/libsodium/releases/libsodium_0.3+fpm0_amd64.deb
     - sudo dpkg -i /tmp/libsodium.deb
-script: ./autogen.sh && ./configure && make check
+env:
+    - USE_LIBGLIB=no
+    - USE_LIBGLIB=yes
+before_script:
+    - ./autogen.sh
+    - sh -c '[ "$USE_LIBGLIB" = "yes" ] && ./configure --with-libglib CFLAGS="-Werror"'
+    - sh -c '[ "$USE_LIBGLIB" = "no" ] && ./configure --without-libglib CFLAGS="-Werror"'
+script: make check
 compiler:
     - clang
     - gcc
