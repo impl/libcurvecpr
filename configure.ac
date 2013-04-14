@@ -2,8 +2,8 @@ AC_PREREQ(2.67)
 AC_INIT(libcurvecpr, 0.1.0, nfontes+libcurvecpr@cynigram.com, libcurvecpr)
 AM_INIT_AUTOMAKE([-Wall -Werror foreign subdir-objects])
 
-AC_CONFIG_SRCDIR([include/server.h])
-AC_CONFIG_HEADER([include/config.h])
+AC_CONFIG_SRCDIR([libcurvecpr/include/server.h])
+AC_CONFIG_HEADER([config.h])
 AC_CONFIG_MACRO_DIR([m4])
 
 # Library version.
@@ -20,10 +20,23 @@ AC_PROG_MAKE_SET
 
 AM_PROG_CC_C_O
 
+PKG_PROG_PKG_CONFIG
+
 # Checks for libraries.
 PKG_CHECK_MODULES([CHECK], [check >= 0.9.8])
 AC_SEARCH_LIBS([clock_gettime], [rt posix4])
 AC_CHECK_LIB([sodium], [crypto_onetimeauth_poly1305_ref], [], [AC_MSG_ERROR([missing libsodium])])
+
+AC_ARG_WITH([libglib],
+    [AS_HELP_STRING([--with-libglib], [build with glib support @<:@default=check@:>@])],
+    [], [with_libglib=check]
+)
+AS_CASE(["$with_glib"],
+    [yes], [PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.14.0], [HAVE_LIBGLIB=1])],
+    [no], [],
+    [PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.14.0], [HAVE_LIBGLIB=1], [HAVE_LIBGLIB=0])]
+)
+AM_CONDITIONAL([USE_LIBGLIB], [test "$with_libglib" != no -a "$HAVE_LIBGLIB" -eq 1])
 
 # Checks for header files.
 AC_HEADER_STDC
@@ -62,10 +75,16 @@ AX_APPEND_LINK_FLAGS([-Wl,-z,relro -Wl,-z,now -Wl,-z,noexecstack], [], [$CCHECKF
 
 # Done!
 AC_CONFIG_FILES([
+    libcurvecpr/include/Makefile
+    libcurvecpr/lib/Makefile
+    libcurvecpr/test/Makefile
+    libcurvecpr/Makefile
+    libcurvecpr/libcurvecpr.pc
+    libcurvecpr-glib/include/Makefile
+    libcurvecpr-glib/lib/Makefile
+    libcurvecpr-glib/test/Makefile
+    libcurvecpr-glib/Makefile
+    libcurvecpr-glib/libcurvecpr-glib.pc
     Makefile
-    include/Makefile
-    lib/Makefile
-    t/Makefile
-    libcurvecpr.pc
 ])
 AC_OUTPUT

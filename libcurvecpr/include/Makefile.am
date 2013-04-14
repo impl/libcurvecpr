@@ -4,6 +4,7 @@ curvecprinclude_HEADERS = \
     bytes.h \
     chicago.h \
     client.h \
+    curvecpr.h \
     messager.h \
     packet.h \
     server.h \

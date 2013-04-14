@@ -11,9 +11,10 @@
 
 #include <sodium/crypto_box.h>
 
-int curvecpr_server_send (struct curvecpr_server *server, struct curvecpr_session *s, const unsigned char *buf, size_t num)
+int curvecpr_server_send (struct curvecpr_server *server, const unsigned char their_session_pk[32], const unsigned char *buf, size_t num)
 {
     const struct curvecpr_server_cf *cf = &server->cf;
+    struct curvecpr_session *s;
 
     unsigned char nonce[24];
     unsigned char p_raw[sizeof(struct curvecpr_packet_server_message) + 1104];
@@ -23,6 +24,10 @@ int curvecpr_server_send (struct curvecpr_server *server, struct curvecpr_sessio
 
     if (num < 16 || num > 1088 || num & 15)
         return -EMSGSIZE;
+
+    /* Get the session. */
+    if (cf->ops.get_session(server, their_session_pk, &s))
+        return -EINVAL;
 
     /* Build the box. */
     curvecpr_bytes_copy(nonce, "CurveCP-server-M", 16);

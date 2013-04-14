@@ -9,7 +9,6 @@
 
 #include <sodium/crypto_box.h>
 
-static const struct curvecpr_session_cf _default_session_cf = { .priv = NULL };
 static const unsigned char _zeros[128] = { 0 };
 
 void curvecpr_client_new (struct curvecpr_client *client, const struct curvecpr_client_cf *cf)
@@ -20,8 +19,8 @@ void curvecpr_client_new (struct curvecpr_client *client, const struct curvecpr_
     if (cf)
         curvecpr_bytes_copy(&client->cf, cf, sizeof(struct curvecpr_client_cf));
 
-    /* We use a default session configuration because it's never exposed to the user. */
-    curvecpr_session_new(&client->session, &_default_session_cf);
+    /* Initialize session. */
+    curvecpr_session_new(&client->session);
 
     client->negotiated = CURVECPR_CLIENT_PENDING;
 }

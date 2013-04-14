@@ -3,13 +3,7 @@
 
 #include <sodium/crypto_uint64.h>
 
-struct curvecpr_session_cf {
-    void *priv;
-};
-
 struct curvecpr_session {
-    struct curvecpr_session_cf cf;
-
     /* Any extensions. */
     unsigned char their_extension[16];
 
@@ -34,9 +28,13 @@ struct curvecpr_session {
 
     /* Server-specific data. */
     unsigned char my_domain_name[256];
+
+    /* Private data. */
+    void *priv;
 };
 
-void curvecpr_session_new (struct curvecpr_session *s, const struct curvecpr_session_cf *cf);
+void curvecpr_session_new (struct curvecpr_session *s);
 void curvecpr_session_next_nonce (struct curvecpr_session *s, unsigned char *destination);
+void curvecpr_session_set_priv (struct curvecpr_session *s, void *priv);
 
 #endif

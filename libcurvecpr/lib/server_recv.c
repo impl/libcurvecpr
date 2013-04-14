@@ -12,17 +12,18 @@
 #include <sodium/crypto_box.h>
 #include <sodium/crypto_secretbox.h>
 
-static int _handle_hello (struct curvecpr_server *server, struct curvecpr_session_cf *s_cf, const struct curvecpr_packet_hello *p)
+static int _handle_hello (struct curvecpr_server *server, void *priv, const struct curvecpr_packet_hello *p)
 {
     const struct curvecpr_server_cf *cf = &server->cf;
-    struct curvecpr_session s;  /* Used only as a temporary store to make what we're
-                                   doing more clear. */
+    struct curvecpr_session s; /* Used only as a temporary store to make what we're doing
+                                  more clear. */
 
     unsigned char nonce[24];
     unsigned char data[96] = { 0 };
 
     /* Dummy initialization. */
-    curvecpr_session_new(&s, s_cf);
+    curvecpr_session_new(&s);
+    curvecpr_session_set_priv(&s, priv);
 
     /* Verify initial connection parameters. */
     curvecpr_bytes_copy(s.their_session_pk, p->client_session_pk, 32);
@@ -78,7 +79,7 @@ static int _handle_hello (struct curvecpr_server *server, struct curvecpr_sessio
     return 0;
 }
 
-static int _handle_initiate (struct curvecpr_server *server, struct curvecpr_session *s, struct curvecpr_session_cf *s_cf, const struct curvecpr_packet_initiate *p, const unsigned char *buf, size_t num)
+static int _handle_initiate (struct curvecpr_server *server, struct curvecpr_session *s, void *priv, const struct curvecpr_packet_initiate *p, const unsigned char *buf, size_t num)
 {
     const struct curvecpr_server_cf *cf = &server->cf;
 
@@ -101,8 +102,7 @@ static int _handle_initiate (struct curvecpr_server *server, struct curvecpr_ses
             return -EINVAL;
 
         s->their_session_nonce = unpacked_nonce;
-        if (s_cf)
-            s->cf.priv = s_cf->priv;
+        curvecpr_session_set_priv(s, priv);
 
         if (cf->ops.recv(server, s, data + sizeof(struct curvecpr_packet_initiate_box), num + 16 - sizeof(struct curvecpr_packet_initiate_box)))
             return -EINVAL;
@@ -132,7 +132,7 @@ static int _handle_initiate (struct curvecpr_server *server, struct curvecpr_ses
             return -EINVAL;
 
         /* Cookie is valid; set up keys. */
-        curvecpr_session_new(&s_new, s_cf);
+        curvecpr_session_new(&s_new);
 
         curvecpr_bytes_copy(s_new.their_session_pk, data + 32, 32);
         curvecpr_bytes_copy(s_new.my_session_sk, data + 64, 32);
@@ -173,6 +173,7 @@ static int _handle_initiate (struct curvecpr_server *server, struct curvecpr_ses
         /* All good, we can go ahead and submit the client for registration. */
         s_new.their_session_nonce = curvecpr_bytes_unpack_uint64(p->nonce);
         curvecpr_bytes_copy(s_new.my_domain_name, p_box->server_domain_name, 256);
+        curvecpr_session_set_priv(&s_new, priv);
 
         if (cf->ops.put_session(server, &s_new, &s_new_stored))
             return -EINVAL; /* This can fail for a variety of reasons that are up to
@@ -187,7 +188,7 @@ static int _handle_initiate (struct curvecpr_server *server, struct curvecpr_ses
     }
 }
 
-static int _handle_client_message (struct curvecpr_server *server, struct curvecpr_session *s, struct curvecpr_session_cf *s_cf, const struct curvecpr_packet_client_message *p, const unsigned char *buf, size_t num)
+static int _handle_client_message (struct curvecpr_server *server, struct curvecpr_session *s, void *priv, const struct curvecpr_packet_client_message *p, const unsigned char *buf, size_t num)
 {
     const struct curvecpr_server_cf *cf = &server->cf;
 
@@ -208,8 +209,7 @@ static int _handle_client_message (struct curvecpr_server *server, struct curvec
         return -EINVAL;
 
     s->their_session_nonce = unpacked_nonce;
-    if (s_cf)
-        s->cf.priv = s_cf->priv;
+    curvecpr_session_set_priv(s, priv);
 
     if (cf->ops.recv(server, s, data + 32, num - 16))
         return -EINVAL;
@@ -217,7 +217,7 @@ static int _handle_client_message (struct curvecpr_server *server, struct curvec
     return 0;
 }
 
-int curvecpr_server_recv (struct curvecpr_server *server, struct curvecpr_session_cf *s_cf, const unsigned char *buf, size_t num)
+int curvecpr_server_recv (struct curvecpr_server *server, void *priv, const unsigned char *buf, size_t num)
 {
     const struct curvecpr_server_cf *cf = &server->cf;
 
@@ -236,7 +236,7 @@ int curvecpr_server_recv (struct curvecpr_server *server, struct curvecpr_sessio
         if (num != sizeof(struct curvecpr_packet_hello))
             return -EINVAL;
 
-        return _handle_hello(server, s_cf, (const struct curvecpr_packet_hello *)buf);
+        return _handle_hello(server, priv, (const struct curvecpr_packet_hello *)buf);
     } else if (p->id[7] == 'I') {
         /* Initiate packet. */
         struct curvecpr_session *s = NULL;
@@ -250,7 +250,7 @@ int curvecpr_server_recv (struct curvecpr_server *server, struct curvecpr_sessio
         /* Try to get session. */
         cf->ops.get_session(server, p_initiate->client_session_pk, &s);
 
-        return _handle_initiate(server, s, s_cf, p_initiate, buf + sizeof(struct curvecpr_packet_initiate), num - sizeof(struct curvecpr_packet_initiate));
+        return _handle_initiate(server, s, priv, p_initiate, buf + sizeof(struct curvecpr_packet_initiate), num - sizeof(struct curvecpr_packet_initiate));
     } else if (p->id[7] == 'M') {
         /* Client message packet. */
         struct curvecpr_session *s = NULL;
@@ -264,7 +264,7 @@ int curvecpr_server_recv (struct curvecpr_server *server, struct curvecpr_sessio
         if (cf->ops.get_session(server, p_message->client_session_pk, &s))
             return -EINVAL;
 
-        return _handle_client_message(server, s, s_cf, p_message, buf + sizeof(struct curvecpr_packet_client_message), num - sizeof(struct curvecpr_packet_client_message));
+        return _handle_client_message(server, s, priv, p_message, buf + sizeof(struct curvecpr_packet_client_message), num - sizeof(struct curvecpr_packet_client_message));
     }
 
     return -EINVAL;
