@@ -54,8 +54,9 @@ void curvecpr_client_messager_glib_new (struct curvecpr_client_messager_glib *cm
 void curvecpr_client_messager_glib_dealloc (struct curvecpr_client_messager_glib *cmg);
 int curvecpr_client_messager_glib_connected (struct curvecpr_client_messager_glib *cmg);
 int curvecpr_client_messager_glib_send (struct curvecpr_client_messager_glib *cmg, const unsigned char *buf, size_t num);
-int curvecpr_client_messager_glib_close (struct curvecpr_client_messager_glib *cmg);
 int curvecpr_client_messager_glib_recv (struct curvecpr_client_messager_glib *cmg, const unsigned char *buf, size_t num);
+unsigned char curvecpr_client_messager_glib_is_finished (struct curvecpr_client_messager_glib *cmg);
+int curvecpr_client_messager_glib_finish (struct curvecpr_client_messager_glib *cmg);
 int curvecpr_client_messager_glib_process_sendq (struct curvecpr_client_messager_glib *cmg);
 long long curvecpr_client_messager_glib_next_timeout (struct curvecpr_client_messager_glib *cmg);
 

@@ -265,7 +265,7 @@ static int _send_block (struct curvecpr_messager *messager, struct curvecpr_bloc
         unsigned long long maximum_gap = UINT32_MAX;
 
         for (;;) {
-            if (cf->ops.recvmarkq_get(messager, block_num++, &received_block))
+            if (cf->ops.recvmarkq_get_nth_unacknowledged(messager, block_num++, &received_block))
                 break;
 
             acknowledgment_ranges[i].exists = 1;
@@ -401,7 +401,7 @@ static int _send_block (struct curvecpr_messager *messager, struct curvecpr_bloc
         int i;
 
         for (i = 0; i < 6 && acknowledgment_ranges[i].exists; ++i)
-            cf->ops.recvmarkq_move_range_to_recvq(messager, acknowledgment_ranges[i].start, acknowledgment_ranges[i].end);
+            cf->ops.recvmarkq_remove_range(messager, acknowledgment_ranges[i].start, acknowledgment_ranges[i].end);
 
     }
 
@@ -486,9 +486,7 @@ long long curvecpr_messager_next_timeout (struct curvecpr_messager *messager)
 
     if (!cf->ops.sendmarkq_is_full(messager)) {
         /* If we have pending data, we might write it. */
-        if (cf->ops.sendq_head(messager, &block)) {
-            /* Nothing to write. */
-        } else {
+        if (!cf->ops.sendq_is_empty(messager)) {
             /* Write at the write rate. */
             if (at > messager->my_sent_clock + chicago->wr_rate)
                 at = messager->my_sent_clock + chicago->wr_rate;

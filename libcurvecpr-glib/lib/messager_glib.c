@@ -84,6 +84,19 @@ static int _sendq_head (struct curvecpr_messager *messager, struct curvecpr_bloc
     return -1;
 }
 
+static unsigned char _sendq_is_empty (struct curvecpr_messager *messager)
+{
+    struct curvecpr_messager_glib *mg = messager->cf.priv;
+
+    return !mg->sendq_head_exists && /* We don't have a block actually waiting to be
+                                        written. */
+        mg->pending_used == 0 &&     /* We don't have any bytes that we could turn into a
+                                        block to be written. */
+        (!mg->pending_eof ||         /* The EOF flag isn't set. */
+            mg->messager.my_eof);    /* Even if our EOF flag is set, the messager must
+                                        not have sent the EOF message. */
+}
+
 static int _sendq_move_to_sendmarkq (struct curvecpr_messager *messager, const struct curvecpr_block *block, struct curvecpr_block **block_stored)
 {
     struct curvecpr_messager_glib *mg = messager->cf.priv;
@@ -251,7 +264,7 @@ static int _recvmarkq_put (struct curvecpr_messager *messager, const struct curv
     return 0;
 }
 
-static int _recvmarkq_get (struct curvecpr_messager *messager, unsigned int n, struct curvecpr_block **block_stored)
+static int _recvmarkq_get_nth_unacknowledged (struct curvecpr_messager *messager, unsigned int n, struct curvecpr_block **block_stored)
 {
     struct curvecpr_messager_glib *mg = messager->cf.priv;
 
@@ -280,7 +293,7 @@ static int _recvmarkq_get (struct curvecpr_messager *messager, unsigned int n, s
     return -1;
 }
 
-static int _recvmarkq_move_range_to_recvq (struct curvecpr_messager *messager, unsigned long long start, unsigned long long end)
+static int _recvmarkq_remove_range (struct curvecpr_messager *messager, unsigned long long start, unsigned long long end)
 {
     struct curvecpr_messager_glib *mg = messager->cf.priv;
 
@@ -317,17 +330,18 @@ void curvecpr_messager_glib_new (struct curvecpr_messager_glib *mg, struct curve
         .ops = {
             .sendq_head = _sendq_head,
             .sendq_move_to_sendmarkq = _sendq_move_to_sendmarkq,
-     
+            .sendq_is_empty = _sendq_is_empty,
+
             .sendmarkq_head = _sendmarkq_head,
             .sendmarkq_get = _sendmarkq_get,
             .sendmarkq_remove_range = _sendmarkq_remove_range,
             .sendmarkq_is_full = _sendmarkq_is_full,
-     
+
             .recvmarkq_put = _recvmarkq_put,
-            .recvmarkq_get = _recvmarkq_get,
+            .recvmarkq_get_nth_unacknowledged = _recvmarkq_get_nth_unacknowledged,
             .recvmarkq_is_full = _recvmarkq_is_full,
-            .recvmarkq_move_range_to_recvq = _recvmarkq_move_range_to_recvq,
-     
+            .recvmarkq_remove_range = _recvmarkq_remove_range,
+
             .send = _send
         },
         .priv = mg
@@ -362,7 +376,12 @@ void curvecpr_messager_glib_dealloc (struct curvecpr_messager_glib *mg)
     g_sequence_free(mg->recvmarkq);
 }
 
-int curvecpr_messager_glib_close (struct curvecpr_messager_glib *mg)
+unsigned char curvecpr_messager_glib_is_finished (struct curvecpr_messager_glib *mg)
+{
+    return mg->messager.my_final && mg->messager.their_final;
+}
+
+int curvecpr_messager_glib_finish (struct curvecpr_messager_glib *mg)
 {
     if (mg->pending_eof)
         return -EINVAL;

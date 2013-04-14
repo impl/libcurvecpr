@@ -13,6 +13,7 @@ struct curvecpr_messager;
 struct curvecpr_messager_ops {
     int (*sendq_head)(struct curvecpr_messager *messager, struct curvecpr_block **block_stored);
     int (*sendq_move_to_sendmarkq)(struct curvecpr_messager *messager, const struct curvecpr_block *block, struct curvecpr_block **block_stored);
+    unsigned char (*sendq_is_empty)(struct curvecpr_messager *messager);
 
     /* The sent-to-be-marked queue (sendmarkq) is a priority queue of blocks ordered by
        the time at which they were last sent. */
@@ -22,9 +23,9 @@ struct curvecpr_messager_ops {
     unsigned char (*sendmarkq_is_full)(struct curvecpr_messager *messager);
 
     int (*recvmarkq_put)(struct curvecpr_messager *messager, const struct curvecpr_block *block, struct curvecpr_block **block_stored);
-    int (*recvmarkq_get)(struct curvecpr_messager *messager, unsigned int n, struct curvecpr_block **block_stored);
+    int (*recvmarkq_get_nth_unacknowledged)(struct curvecpr_messager *messager, unsigned int n, struct curvecpr_block **block_stored);
     unsigned char (*recvmarkq_is_full)(struct curvecpr_messager *messager);
-    int (*recvmarkq_move_range_to_recvq)(struct curvecpr_messager *messager, unsigned long long start, unsigned long long end);
+    int (*recvmarkq_remove_range)(struct curvecpr_messager *messager, unsigned long long start, unsigned long long end);
 
     int (*send)(struct curvecpr_messager *messager, const unsigned char *buf, size_t num);
 };

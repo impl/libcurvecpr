@@ -111,9 +111,14 @@ int curvecpr_client_messager_glib_send (struct curvecpr_client_messager_glib *cm
     return curvecpr_messager_glib_send(&cmg->mg, buf, num);
 }
 
-int curvecpr_client_messager_glib_close (struct curvecpr_client_messager_glib *cmg)
+unsigned char curvecpr_client_messager_glib_is_finished (struct curvecpr_client_messager_glib *cmg)
 {
-    return curvecpr_messager_glib_close(&cmg->mg);
+    return curvecpr_messager_glib_is_finished(&cmg->mg);
+}
+
+int curvecpr_client_messager_glib_finish (struct curvecpr_client_messager_glib *cmg)
+{
+    return curvecpr_messager_glib_finish(&cmg->mg);
 }
 
 int curvecpr_client_messager_glib_recv (struct curvecpr_client_messager_glib *cmg, const unsigned char *buf, size_t num)
@@ -123,10 +128,10 @@ int curvecpr_client_messager_glib_recv (struct curvecpr_client_messager_glib *cm
 
 int curvecpr_client_messager_glib_process_sendq (struct curvecpr_client_messager_glib *cmg)
 {
-    return curvecpr_messager_glib_process_sendq(&cmg->mg);
+    return cmg->client.negotiated == CURVECPR_CLIENT_PENDING ? 0 : curvecpr_messager_glib_process_sendq(&cmg->mg);
 }
 
 long long curvecpr_client_messager_glib_next_timeout (struct curvecpr_client_messager_glib *cmg)
 {
-    return curvecpr_messager_glib_next_timeout(&cmg->mg);
+    return cmg->client.negotiated == CURVECPR_CLIENT_PENDING ? -1 : curvecpr_messager_glib_next_timeout(&cmg->mg);
 }

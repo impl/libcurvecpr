@@ -49,7 +49,8 @@ struct curvecpr_messager_glib {
 
 void curvecpr_messager_glib_new (struct curvecpr_messager_glib *mg, struct curvecpr_messager_glib_cf *cf, unsigned char client);
 void curvecpr_messager_glib_dealloc (struct curvecpr_messager_glib *mg);
-int curvecpr_messager_glib_close (struct curvecpr_messager_glib *mg);
+unsigned char curvecpr_messager_glib_is_finished (struct curvecpr_messager_glib *mg);
+int curvecpr_messager_glib_finish (struct curvecpr_messager_glib *mg);
 int curvecpr_messager_glib_send (struct curvecpr_messager_glib *mg, const unsigned char *buf, size_t num);
 int curvecpr_messager_glib_recv (struct curvecpr_messager_glib *mg, const unsigned char *buf, size_t num);
 int curvecpr_messager_glib_process_sendq (struct curvecpr_messager_glib *mg);
