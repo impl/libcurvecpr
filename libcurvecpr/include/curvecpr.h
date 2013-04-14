@@ -1,14 +1,14 @@
 #ifndef __CURVECPR_CURVECPR_H
 #define __CURVECPR_CURVECPR_H
 
-#include "block.h"
-#include "bytes.h"
-#include "chicago.h"
-#include "client.h"
-#include "messager.h"
-#include "packet.h"
-#include "server.h"
-#include "session.h"
-#include "util.h"
+#include <curvecpr/block.h>
+#include <curvecpr/bytes.h>
+#include <curvecpr/chicago.h>
+#include <curvecpr/client.h>
+#include <curvecpr/messager.h>
+#include <curvecpr/packet.h>
+#include <curvecpr/server.h>
+#include <curvecpr/session.h>
+#include <curvecpr/util.h>
 
 #endif

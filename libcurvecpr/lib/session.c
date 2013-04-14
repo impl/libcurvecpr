@@ -1,8 +1,8 @@
 #include "config.h"
 
-#include "session.h"
+#include <curvecpr/session.h>
 
-#include "bytes.h"
+#include <curvecpr/bytes.h>
 
 void curvecpr_session_new (struct curvecpr_session *s)
 {

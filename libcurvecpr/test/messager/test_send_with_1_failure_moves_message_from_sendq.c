@@ -1,7 +1,7 @@
 #include <check.h>
 #include <check_extras.h>
 
-#include "messager.h"
+#include <curvecpr/messager.h>
 
 static struct curvecpr_block static_block = {
     .id = 0,

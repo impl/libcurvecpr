@@ -1,8 +1,9 @@
 #include "config.h"
 
-#include "bytes.h"
-#include "messager.h"
-#include "messager_glib.h"
+#include <curvecpr_glib/messager_glib.h>
+
+#include <curvecpr/bytes.h>
+#include <curvecpr/messager.h>
 
 #include <errno.h>
 #include <string.h>

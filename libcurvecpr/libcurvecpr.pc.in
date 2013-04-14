@@ -9,4 +9,4 @@ Description: libcurvecpr, a portable implementation of CurveCP
 Version: @PACKAGE_VERSION@
 URL: https://github.com/impl/libcurvecpr
 Libs: -L${libdir} -lcurvecpr
-Cflags: -I${includedir}/curvecpr
+Cflags: -I${includedir}

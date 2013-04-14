@@ -2,7 +2,7 @@ AC_PREREQ(2.67)
 AC_INIT(libcurvecpr, 0.1.0, nfontes+libcurvecpr@cynigram.com, libcurvecpr)
 AM_INIT_AUTOMAKE([-Wall -Werror foreign subdir-objects])
 
-AC_CONFIG_SRCDIR([libcurvecpr/include/server.h])
+AC_CONFIG_SRCDIR([libcurvecpr/include/curvecpr.h])
 AC_CONFIG_HEADER([config.h])
 AC_CONFIG_MACRO_DIR([m4])
 

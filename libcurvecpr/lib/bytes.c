@@ -1,6 +1,6 @@
 #include "config.h"
 
-#include "bytes.h"
+#include <curvecpr/bytes.h>
 
 #include <string.h>
 

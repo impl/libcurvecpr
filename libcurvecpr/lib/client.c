@@ -1,11 +1,11 @@
 #include "config.h"
 
-#include "client.h"
+#include <curvecpr/client.h>
 
-#include "bytes.h"
-#include "packet.h"
-#include "session.h"
-#include "util.h"
+#include <curvecpr/bytes.h>
+#include <curvecpr/packet.h>
+#include <curvecpr/session.h>
+#include <curvecpr/util.h>
 
 #include <sodium/crypto_box.h>
 

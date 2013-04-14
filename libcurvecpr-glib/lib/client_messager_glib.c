@@ -1,9 +1,11 @@
 #include "config.h"
 
-#include "bytes.h"
-#include "client.h"
-#include "client_messager_glib.h"
-#include "messager_glib.h"
+#include <curvecpr_glib/client_messager_glib.h>
+
+#include <curvecpr_glib/messager_glib.h>
+
+#include <curvecpr/bytes.h>
+#include <curvecpr/client.h>
 
 static int _client_send (struct curvecpr_client *client, const unsigned char *buf, size_t num)
 {

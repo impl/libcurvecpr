@@ -1,8 +1,8 @@
 #ifndef __CURVECPR_GLIB_MESSAGER_GLIB_H
 #define __CURVECPR_GLIB_MESSAGER_GLIB_H
 
-#include "block.h"
-#include "messager.h"
+#include <curvecpr/block.h>
+#include <curvecpr/messager.h>
 
 #include <string.h>
 

@@ -1,10 +1,10 @@
 #include "config.h"
 
-#include "messager.h"
+#include <curvecpr/messager.h>
 
-#include "block.h"
-#include "bytes.h"
-#include "chicago.h"
+#include <curvecpr/block.h>
+#include <curvecpr/bytes.h>
+#include <curvecpr/chicago.h>
 
 #include <errno.h>
 #include <stdint.h>

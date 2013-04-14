@@ -1,10 +1,10 @@
 #include "config.h"
 
-#include "client.h"
+#include <curvecpr/client.h>
 
-#include "bytes.h"
-#include "session.h"
-#include "packet.h"
+#include <curvecpr/bytes.h>
+#include <curvecpr/session.h>
+#include <curvecpr/packet.h>
 
 #include <string.h>
 #include <errno.h>

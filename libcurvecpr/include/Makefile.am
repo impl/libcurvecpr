@@ -1,12 +1,11 @@
-curvecprincludedir = $(includedir)/curvecpr
-curvecprinclude_HEADERS = \
-    block.h \
-    bytes.h \
-    chicago.h \
-    client.h \
-    curvecpr.h \
-    messager.h \
-    packet.h \
-    server.h \
-    session.h \
-    util.h
+nobase_include_HEADERS = \
+    curvecpr/block.h \
+    curvecpr/bytes.h \
+    curvecpr/chicago.h \
+    curvecpr/client.h \
+    curvecpr/messager.h \
+    curvecpr/packet.h \
+    curvecpr/server.h \
+    curvecpr/session.h \
+    curvecpr/util.h \
+    curvecpr.h

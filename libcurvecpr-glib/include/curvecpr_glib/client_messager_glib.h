@@ -1,9 +1,10 @@
 #ifndef __CURVECPR_GLIB_CLIENT_MESSAGER_GLIB_H
 #define __CURVECPR_GLIB_CLIENT_MESSAGER_GLIB_H
 
-#include "block.h"
-#include "client.h"
 #include "messager_glib.h"
+
+#include <curvecpr/block.h>
+#include <curvecpr/client.h>
 
 #include <string.h>
 

@@ -1,8 +1,8 @@
 #include "config.h"
 
-#include "util.h"
+#include <curvecpr/util.h>
 
-#include "bytes.h"
+#include <curvecpr/bytes.h>
 
 #include <time.h>
 

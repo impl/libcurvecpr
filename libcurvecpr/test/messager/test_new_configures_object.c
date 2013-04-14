@@ -1,7 +1,7 @@
 #include <check.h>
 #include <check_extras.h>
 
-#include "messager.h"
+#include <curvecpr/messager.h>
 
 static char static_priv[] = "Hello!";
 

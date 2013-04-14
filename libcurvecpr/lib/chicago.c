@@ -1,9 +1,9 @@
 #include "config.h"
 
-#include "chicago.h"
+#include <curvecpr/chicago.h>
 
-#include "bytes.h"
-#include "util.h"
+#include <curvecpr/bytes.h>
+#include <curvecpr/util.h>
 
 static void _try_update_rates (struct curvecpr_chicago *chicago)
 {

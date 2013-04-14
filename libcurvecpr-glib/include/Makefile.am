@@ -1,5 +1,4 @@
-curvecprglibincludedir = $(includedir)/curvecpr/glib
-curvecprglibinclude_HEADERS = \
-    client_messager_glib.h \
-    curvecpr_glib.h \
-    messager_glib.h
+nobase_include_HEADERS = \
+    curvecpr_glib/client_messager_glib.h \
+    curvecpr_glib/messager_glib.h \
+    curvecpr_glib.h

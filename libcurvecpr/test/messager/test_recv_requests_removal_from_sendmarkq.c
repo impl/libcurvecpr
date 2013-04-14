@@ -1,8 +1,9 @@
 #include <check.h>
 #include <check_extras.h>
 
-#include "bytes.h"
-#include "messager.h"
+#include <curvecpr/messager.h>
+
+#include <curvecpr/bytes.h>
 
 static int t_sendmarkq_remove_range (struct curvecpr_messager *messager, unsigned long long start, unsigned long long end)
 {

@@ -1,8 +1,8 @@
 #include "config.h"
 
-#include "server.h"
+#include <curvecpr/server.h>
 
-#include "bytes.h"
+#include <curvecpr/bytes.h>
 
 #include <sodium/randombytes.h>
 
