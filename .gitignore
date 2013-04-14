@@ -2,16 +2,16 @@
 /autom4te.cache/
 /compile
 /config.guess
+/config.h
+/config.h.in
 /config.log
 /config.status
 /config.sub
 /configure
 /depcomp
-/include/config.h
-/include/config.h.in
-/include/stamp-h1
 /install-sh
-/libcurvecpr.pc
+/libcurvecpr/libcurvecpr.pc
+/libcurvecpr-glib/libcurvecpr-glib.pc
 /libtool
 /ltmain.sh
 /m4/libtool.m4
@@ -20,6 +20,7 @@
 /m4/ltversion.m4
 /m4/lt~obsolete.m4
 /missing
+/stamp-h1
 
 .deps/
 .dirstamp
