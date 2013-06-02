@@ -25,7 +25,7 @@ PKG_PROG_PKG_CONFIG
 # Checks for libraries.
 PKG_CHECK_MODULES([CHECK], [check >= 0.9.8])
 AC_SEARCH_LIBS([clock_gettime], [rt posix4])
-AC_CHECK_LIB([sodium], [crypto_onetimeauth_poly1305_ref], [], [AC_MSG_ERROR([missing libsodium])])
+AC_CHECK_LIB([sodium], [sodium_init], [], [AC_MSG_ERROR([missing libsodium])])
 
 AC_ARG_WITH([libglib],
     [AS_HELP_STRING([--with-libglib], [build with glib support @<:@default=check@:>@])],
