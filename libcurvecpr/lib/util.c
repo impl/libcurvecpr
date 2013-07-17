@@ -5,13 +5,15 @@
 #include <curvecpr/bytes.h>
 
 #include <time.h>
-
-#include <sodium/randombytes.h>
-
 #ifdef HAVE_HOST_GET_CLOCK_SERVICE
+#include <libkern/OSAtomic.h>
 #include <mach/clock.h>
 #include <mach/mach.h>
+#include <mach/mach_error.h>
+#include <stdint.h>
 #endif
+
+#include <sodium/randombytes.h>
 
 /* XXX: Current implementation is limited to n < 2^55. */
 long long curvecpr_util_random_mod_n (long long n)
@@ -34,18 +36,36 @@ long long curvecpr_util_random_mod_n (long long n)
 /* XXX: Nanosecond granularity limits users to 1 terabyte per second. */
 long long curvecpr_util_nanoseconds (void)
 {
-#if defined(HAVE_CLOCK_GETTIME)
+    /* XXX: host_get_clock_service() has been officially deprecated for years;
+       this may need to be updated in the future. */
+#ifdef HAVE_HOST_GET_CLOCK_SERVICE
+    static int32_t cclock_registered = 0;
+    static volatile clock_serv_t cclock = 0;
+    mach_timespec_t t;
+
+    if (!cclock) {
+        if (OSAtomicCompareAndSwap32Barrier(0, 1, &cclock_registered) == 1) {
+            clock_serv_t cclock_actual;
+
+            if (host_get_clock_service(mach_host_self(), CALENDAR_CLOCK, &cclock_actual) != KERN_SUCCESS) {
+                cclock_registered = 0;
+                return -1;
+            }
+
+            cclock = cclock_actual;
+        } else {
+            while (!cclock)
+                /* Wait for clock to become available */;
+        }
+    }
+
+    if (clock_get_time(cclock, &t) != KERN_SUCCESS)
+        return -1;
+#else
     struct timespec t;
+
     if (clock_gettime(CLOCK_REALTIME, &t) != 0)
         return -1;
-#elif defined(HAVE_HOST_GET_CLOCK_SERVICE)
-    clock_serv_t clock;
-    mach_timespec_t t;
-    host_get_clock_service(mach_host_self(), CALENDAR_CLOCK, &clock);
-    clock_get_time(clock, &t);
-    mach_port_deallocate(mach_task_self(), clock);
-#else
-    #error "no function for getting microseconds"
 #endif
 
     return t.tv_sec * 1000000000LL + t.tv_nsec;
