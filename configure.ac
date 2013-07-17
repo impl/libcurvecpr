@@ -55,7 +55,10 @@ AC_TYPE_UINT32_T
 AC_CHECK_TYPE([struct timespec], [], [AC_MSG_ERROR([missing struct timespec])], [[#include <time.h>]])
 
 # Checks for functions.
-AC_CHECK_FUNCS([clock_gettime], [], [AC_MSG_ERROR([missing clock_gettime])])
+AC_CHECK_FUNCS([clock_gettime],
+    [AC_DEFINE([HAVE_CLOCK_GETTIME])],
+    [AC_CHECK_FUNCS([host_get_clock_service], [AC_DEFINE([HAVE_HOST_GET_CLOCK_SERVICE])], [AC_MSG_ERROR([no clock_gettime or host_get_clock_service])])]
+)
 
 # Checks for compiler flags.
 CCHECKFLAGS="-Wno-error"

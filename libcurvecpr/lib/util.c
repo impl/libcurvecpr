@@ -5,6 +5,13 @@
 #include <curvecpr/bytes.h>
 
 #include <time.h>
+#ifdef HAVE_HOST_GET_CLOCK_SERVICE
+#include <libkern/OSAtomic.h>
+#include <mach/clock.h>
+#include <mach/mach.h>
+#include <mach/mach_error.h>
+#include <stdint.h>
+#endif
 
 #include <sodium/randombytes.h>
 
@@ -29,9 +36,37 @@ long long curvecpr_util_random_mod_n (long long n)
 /* XXX: Nanosecond granularity limits users to 1 terabyte per second. */
 long long curvecpr_util_nanoseconds (void)
 {
+    /* XXX: host_get_clock_service() has been officially deprecated for years;
+       this may need to be updated in the future. */
+#ifdef HAVE_HOST_GET_CLOCK_SERVICE
+    static int32_t cclock_registered = 0;
+    static volatile clock_serv_t cclock = 0;
+    mach_timespec_t t;
+
+    if (!cclock) {
+        if (OSAtomicCompareAndSwap32Barrier(0, 1, &cclock_registered) == 1) {
+            clock_serv_t cclock_actual;
+
+            if (host_get_clock_service(mach_host_self(), CALENDAR_CLOCK, &cclock_actual) != KERN_SUCCESS) {
+                cclock_registered = 0;
+                return -1;
+            }
+
+            cclock = cclock_actual;
+        } else {
+            while (!cclock)
+                /* Wait for clock to become available */;
+        }
+    }
+
+    if (clock_get_time(cclock, &t) != KERN_SUCCESS)
+        return -1;
+#else
     struct timespec t;
+
     if (clock_gettime(CLOCK_REALTIME, &t) != 0)
         return -1;
+#endif
 
     return t.tv_sec * 1000000000LL + t.tv_nsec;
 }
