@@ -3,14 +3,15 @@ before_install:
     - sudo apt-get update -qq
     - sudo apt-get install -qq check
     - pushd /tmp
-    - wget http://download.dnscrypt.org/libsodium/releases/libsodium-0.4.1.tar.gz
-    - tar xzf libsodium-0.4.1.tar.gz
-    - pushd libsodium-0.4.1
+    - wget http://download.dnscrypt.org/libsodium/releases/libsodium-0.4.2.tar.gz
+    - tar xzf libsodium-0.4.2.tar.gz
+    - pushd libsodium-0.4.2
     - ./configure
     - make
     - sudo make install
     - popd
     - popd
+    - ldconfig
 env:
     - USE_LIBGLIB=no
     - USE_LIBGLIB=yes
