@@ -11,7 +11,7 @@ before_install:
     - sudo make install
     - popd
     - popd
-    - ldconfig
+    - sudo ldconfig
 env:
     - USE_LIBGLIB=no
     - USE_LIBGLIB=yes
