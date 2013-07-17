@@ -8,6 +8,11 @@
 
 #include <sodium/randombytes.h>
 
+#ifdef HAVE_HOST_GET_CLOCK_SERVICE
+#include <mach/clock.h>
+#include <mach/mach.h>
+#endif
+
 /* XXX: Current implementation is limited to n < 2^55. */
 long long curvecpr_util_random_mod_n (long long n)
 {
@@ -29,9 +34,19 @@ long long curvecpr_util_random_mod_n (long long n)
 /* XXX: Nanosecond granularity limits users to 1 terabyte per second. */
 long long curvecpr_util_nanoseconds (void)
 {
+#if defined(HAVE_CLOCK_GETTIME)
     struct timespec t;
     if (clock_gettime(CLOCK_REALTIME, &t) != 0)
         return -1;
+#elif defined(HAVE_HOST_GET_CLOCK_SERVICE)
+    clock_serv_t clock;
+    mach_timespec_t t;
+    host_get_clock_service(mach_host_self(), CALENDAR_CLOCK, &clock);
+    clock_get_time(clock, &t);
+    mach_port_deallocate(mach_task_self(), clock);
+#else
+    #error "no function for getting microseconds"
+#endif
 
     return t.tv_sec * 1000000000LL + t.tv_nsec;
 }
