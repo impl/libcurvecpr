@@ -23,7 +23,6 @@ static int _handle_hello (struct curvecpr_server *server, void *priv, const stru
 
     /* Dummy initialization. */
     curvecpr_session_new(&s);
-    curvecpr_session_set_priv(&s, priv);
 
     /* Verify initial connection parameters. */
     curvecpr_bytes_copy(s.their_session_pk, p->client_session_pk, 32);
@@ -72,14 +71,14 @@ static int _handle_hello (struct curvecpr_server *server, void *priv, const stru
         curvecpr_bytes_copy(po.nonce, nonce + 8, 16);
         curvecpr_bytes_copy(po.box, (const unsigned char *)&po_box + 16, 144);
 
-        if (cf->ops.send(server, &s, (const unsigned char *)&po, sizeof(struct curvecpr_packet_cookie)))
+        if (cf->ops.send(server, &s, priv, (const unsigned char *)&po, sizeof(struct curvecpr_packet_cookie)))
             return -EINVAL;
     }
 
     return 0;
 }
 
-static int _handle_initiate (struct curvecpr_server *server, struct curvecpr_session *s, void *priv, const struct curvecpr_packet_initiate *p, const unsigned char *buf, size_t num)
+static int _handle_initiate (struct curvecpr_server *server, struct curvecpr_session *s, void *priv, const struct curvecpr_packet_initiate *p, const unsigned char *buf, size_t num, struct curvecpr_session **s_stored)
 {
     const struct curvecpr_server_cf *cf = &server->cf;
 
@@ -102,9 +101,8 @@ static int _handle_initiate (struct curvecpr_server *server, struct curvecpr_ses
             return -EINVAL;
 
         s->their_session_nonce = unpacked_nonce;
-        curvecpr_session_set_priv(s, priv);
 
-        if (cf->ops.recv(server, s, data + sizeof(struct curvecpr_packet_initiate_box), num + 16 - sizeof(struct curvecpr_packet_initiate_box)))
+        if (cf->ops.recv(server, s, priv, data + sizeof(struct curvecpr_packet_initiate_box), num + 16 - sizeof(struct curvecpr_packet_initiate_box)))
             return -EINVAL;
 
         return 0;
@@ -173,16 +171,18 @@ static int _handle_initiate (struct curvecpr_server *server, struct curvecpr_ses
         /* All good, we can go ahead and submit the client for registration. */
         s_new.their_session_nonce = curvecpr_bytes_unpack_uint64(p->nonce);
         curvecpr_bytes_copy(s_new.my_domain_name, p_box->server_domain_name, 256);
-        curvecpr_session_set_priv(&s_new, priv);
 
-        if (cf->ops.put_session(server, &s_new, &s_new_stored))
+        if (cf->ops.put_session(server, &s_new, priv, &s_new_stored))
             return -EINVAL; /* This can fail for a variety of reasons that are up to
                                the delegate to determine, but two typical ones will be
                                too many connections or an invalid domain name. */
 
         /* Now the session is registered; we can send the encapsulated message. */
-        if (cf->ops.recv(server, s_new_stored, data + sizeof(struct curvecpr_packet_initiate_box), num + 16 - sizeof(struct curvecpr_packet_initiate_box)))
+        if (cf->ops.recv(server, s_new_stored, priv, data + sizeof(struct curvecpr_packet_initiate_box), num + 16 - sizeof(struct curvecpr_packet_initiate_box)))
             return -EINVAL;
+
+        if (s_stored)
+            *s_stored = s_new_stored;
 
         return 0;
     }
@@ -209,15 +209,14 @@ static int _handle_client_message (struct curvecpr_server *server, struct curvec
         return -EINVAL;
 
     s->their_session_nonce = unpacked_nonce;
-    curvecpr_session_set_priv(s, priv);
 
-    if (cf->ops.recv(server, s, data + 32, num - 16))
+    if (cf->ops.recv(server, s, priv, data + 32, num - 16))
         return -EINVAL;
 
     return 0;
 }
 
-int curvecpr_server_recv (struct curvecpr_server *server, void *priv, const unsigned char *buf, size_t num)
+int curvecpr_server_recv (struct curvecpr_server *server, void *priv, const unsigned char *buf, size_t num, struct curvecpr_session **s_stored)
 {
     const struct curvecpr_server_cf *cf = &server->cf;
 
@@ -245,12 +244,20 @@ int curvecpr_server_recv (struct curvecpr_server *server, void *priv, const unsi
         if (num < 560)
             return -EINVAL;
 
-        p_initiate = (const struct curvecpr_packet_initiate *)p;
+        p_initiate = (const struct curvecpr_packet_initiate *)buf;
 
         /* Try to get session. */
         cf->ops.get_session(server, p_initiate->client_session_pk, &s);
 
-        return _handle_initiate(server, s, priv, p_initiate, buf + sizeof(struct curvecpr_packet_initiate), num - sizeof(struct curvecpr_packet_initiate));
+        {
+            struct curvecpr_session *s_return = NULL;
+            int result = _handle_initiate(server, s, priv, p_initiate, buf + sizeof(struct curvecpr_packet_initiate), num - sizeof(struct curvecpr_packet_initiate), &s_return);
+
+            if (result == 0 && s_stored)
+                *s_stored = s_return;
+
+            return result;
+        }
     } else if (p->id[7] == 'M') {
         /* Client message packet. */
         struct curvecpr_session *s = NULL;
@@ -264,7 +271,14 @@ int curvecpr_server_recv (struct curvecpr_server *server, void *priv, const unsi
         if (cf->ops.get_session(server, p_message->client_session_pk, &s))
             return -EINVAL;
 
-        return _handle_client_message(server, s, priv, p_message, buf + sizeof(struct curvecpr_packet_client_message), num - sizeof(struct curvecpr_packet_client_message));
+        {
+            int result = _handle_client_message(server, s, priv, p_message, buf + sizeof(struct curvecpr_packet_client_message), num - sizeof(struct curvecpr_packet_client_message));
+
+            if (result == 0 && s_stored)
+                *s_stored = s;
+
+            return result;
+        }
     }
 
     return -EINVAL;

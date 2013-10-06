@@ -432,8 +432,9 @@ int curvecpr_messager_process_sendq (struct curvecpr_messager *messager)
     curvecpr_chicago_refresh_clock(chicago);
 
     /* Should we send a block? */
-    if (cf->ops.recvmarkq_is_full(messager))
-        /* We must send a block, as we can't recv() any more until we do. */
+    if (!cf->ops.recvmarkq_is_empty(messager))
+        /* Always acknowledge any received data immediately -- not doing so messes up the
+           RTT calculations for flow control. */
         acknowledge = 1;
 
     if (chicago->clock >= messager->my_sent_clock + chicago->wr_rate)

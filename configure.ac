@@ -29,17 +29,6 @@ PKG_CHECK_MODULES([CHECK], [check >= 0.9.8])
 AC_SEARCH_LIBS([clock_gettime], [rt posix4])
 AC_CHECK_LIB([sodium], [sodium_init], [], [AC_MSG_ERROR([missing libsodium])])
 
-AC_ARG_WITH([libglib],
-    [AS_HELP_STRING([--with-libglib], [build with glib support @<:@default=check@:>@])],
-    [], [with_libglib=check]
-)
-AS_CASE(["$with_glib"],
-    [yes], [PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.14.0], [HAVE_LIBGLIB=1])],
-    [no], [],
-    [PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.14.0], [HAVE_LIBGLIB=1], [HAVE_LIBGLIB=0])]
-)
-AM_CONDITIONAL([USE_LIBGLIB], [test "$with_libglib" != no -a "$HAVE_LIBGLIB" -eq 1])
-
 # Checks for header files.
 AC_HEADER_STDC
 AC_CHECK_HEADERS([errno.h stdint.h string.h time.h], [], [AC_MSG_ERROR([missing required header file(s)])])
@@ -85,11 +74,6 @@ AC_CONFIG_FILES([
     libcurvecpr/test/Makefile
     libcurvecpr/Makefile
     libcurvecpr/libcurvecpr.pc
-    libcurvecpr-glib/include/Makefile
-    libcurvecpr-glib/lib/Makefile
-    libcurvecpr-glib/test/Makefile
-    libcurvecpr-glib/Makefile
-    libcurvecpr-glib/libcurvecpr-glib.pc
     Makefile
 ])
 AC_OUTPUT
