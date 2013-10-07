@@ -8,6 +8,21 @@ libcurvecpr is based on a system of callbacks that must be implemented by librar
 
 This means that while it's slightly more effort to build software based on libcurvecpr than other packages, it provides complete freedom to use any underlying mechanism for handling network traffic you want&mdash;whether it's an IPC connection to another program, standard `poll(2)`-type functionality, or [libev](http://software.schmorp.de/pkg/libev.html).
 
+## How do I get it?
+
+The current source code release can be obtained from the GitHub [releases page](https://github.com/impl/libcurvecpr/releases).
+
+libcurvecpr is currently packaged for the following operating systems:
+
+* For OS X using [Homebrew](https://github.com/mxcl/homebrew):
+
+  ```
+  $ brew tap impl/libcurvecpr
+  $ brew install libcurvecpr
+  ```
+
+* For NetBSD in `security/libcurvecpr`.
+
 ## Can I see an example?
 
 Here's how one might implement sending an encrypted message using `sendto(2)`:
