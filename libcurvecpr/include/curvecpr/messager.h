@@ -28,6 +28,8 @@ struct curvecpr_messager_ops {
     int (*recvmarkq_remove_range)(struct curvecpr_messager *messager, unsigned long long start, unsigned long long end);
 
     int (*send)(struct curvecpr_messager *messager, const unsigned char *buf, size_t num);
+
+    void (*put_next_timeout)(struct curvecpr_messager *messager, const long long timeout_ns);
 };
 
 struct curvecpr_messager_cf {

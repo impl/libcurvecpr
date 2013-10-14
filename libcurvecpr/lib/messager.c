@@ -61,6 +61,9 @@ void curvecpr_messager_new (struct curvecpr_messager *messager, const struct cur
     /* If we're in client mode, initiate packets have a maximum size of 512 bytes.
        Otherwise, we're in server mode, and we can start at 1024. */
     messager->my_maximum_send_bytes = client ? 512 : 1024;
+
+    /* Fire off initial timeout notification. */
+    curvecpr_messager_next_timeout(messager);
 }
 
 int curvecpr_messager_recv (struct curvecpr_messager *messager, const unsigned char *buf, size_t num)
@@ -196,6 +199,9 @@ int curvecpr_messager_recv (struct curvecpr_messager *messager, const unsigned c
             messager->their_total_bytes = stored_block->offset + stored_block->data_len;
         }
     }
+
+    /* Update timeout (if callback defined). */
+    curvecpr_messager_next_timeout(messager);
 
     /* Update acknowledgment information (but only if this isn't a pure
        acknowledgment). */
@@ -418,6 +424,9 @@ static int _send_block (struct curvecpr_messager *messager, struct curvecpr_bloc
     /* Reset last received ID so we don't acknowledge an old message. */
     messager->their_sent_id = 0;
 
+    /* Update timeout (if callback defined). */
+    curvecpr_messager_next_timeout(messager);
+
     return 0;
 }
 
@@ -479,7 +488,7 @@ long long curvecpr_messager_next_timeout (struct curvecpr_messager *messager)
 
     struct curvecpr_block *block = NULL;
 
-    long long at;
+    long long at, timeout;
 
     curvecpr_chicago_refresh_clock(chicago);
 
@@ -505,7 +514,12 @@ long long curvecpr_messager_next_timeout (struct curvecpr_messager *messager)
     /* If the current time is after the next action time, the timeout is 0. However, we
        always have at least a 1 millisecond timeout to prevent the CPU from spinning. */
     if (chicago->clock > at)
-        return 1000000;
+        timeout = 1000000;
     else
-        return at - chicago->clock + 1000000;
+        timeout = at - chicago->clock + 1000000;
+
+    if (cf->ops.put_next_timeout)
+        cf->ops.put_next_timeout(messager, timeout);
+
+    return timeout;
 }
