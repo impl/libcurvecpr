@@ -400,6 +400,9 @@ static int _send_block (struct curvecpr_messager *messager, struct curvecpr_bloc
                sent because it could fail for any other arbitrary reason as well and need
                to be reinvoked. */
         }
+
+        /* Update the last sent time for timeout calcuations. */
+        messager->my_sent_clock = messager->chicago.clock;
     }
 
     /* Remove all the acknowledged ranges from the pending queue. */
@@ -417,9 +420,6 @@ static int _send_block (struct curvecpr_messager *messager, struct curvecpr_bloc
     /* The remote side is in a final state if we've acknowledged their EOF. */
     if (messager->their_eof && messager->their_contiguous_sent_bytes >= messager->their_total_bytes)
         messager->their_final = 1;
-
-    /* Update the last sent time for timeout calcuations. */
-    messager->my_sent_clock = messager->chicago.clock;
 
     /* Reset last received ID so we don't acknowledge an old message. */
     messager->their_sent_id = 0;
@@ -490,6 +490,10 @@ long long curvecpr_messager_next_timeout (struct curvecpr_messager *messager)
 
     long long at, timeout;
 
+    /* If we have anything to be written, we wouldn't spin at all, so don't include an
+       adjustment in the timeout for it in that case. */
+    int would_spin = 1;
+
     curvecpr_chicago_refresh_clock(chicago);
 
     at = chicago->clock + 60000000000LL; /* 60 seconds. */
@@ -497,6 +501,8 @@ long long curvecpr_messager_next_timeout (struct curvecpr_messager *messager)
     if (!cf->ops.sendmarkq_is_full(messager)) {
         /* If we have pending data, we might write it. */
         if (!cf->ops.sendq_is_empty(messager)) {
+            would_spin = 0;
+
             /* Write at the write rate. */
             if (at > messager->my_sent_clock + chicago->wr_rate)
                 at = messager->my_sent_clock + chicago->wr_rate;
@@ -507,16 +513,20 @@ long long curvecpr_messager_next_timeout (struct curvecpr_messager *messager)
     if (cf->ops.sendmarkq_head(messager, &block)) {
         /* No earliest block. */
     } else {
+        would_spin = 0;
+
         if (at > block->clock + chicago->rtt_timeout)
             at = block->clock + chicago->rtt_timeout;
     }
 
-    /* If the current time is after the next action time, the timeout is 0. However, we
-       always have at least a 1 millisecond timeout to prevent the CPU from spinning. */
     if (chicago->clock > at)
-        timeout = 1000000;
+        timeout = 0;
     else
-        timeout = at - chicago->clock + 1000000;
+        timeout = at - chicago->clock;
+
+    /* Apply spinning adjustment if necessary. */
+    if (would_spin)
+        timeout += 1000000;
 
     if (cf->ops.put_next_timeout)
         cf->ops.put_next_timeout(messager, timeout);

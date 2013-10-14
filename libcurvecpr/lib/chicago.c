@@ -143,10 +143,9 @@ void curvecpr_chicago_new (struct curvecpr_chicago *chicago)
 
     chicago->rtt_phase = 0;
 
-    /* FIXME: This should be 1 second? */
-    chicago->wr_rate = 0;
+    chicago->wr_rate = 1000000000;
 
-    chicago->ns_last_update = 0;
+    chicago->ns_last_update = chicago->clock;
     chicago->ns_last_edge = 0;
     chicago->ns_last_doubling = 0;
     chicago->ns_last_panic = 0;
