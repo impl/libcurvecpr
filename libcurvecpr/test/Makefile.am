@@ -1,8 +1,8 @@
 EXTRA_DIST = check_extras.h
 
 AM_CPPFLAGS = -I$(top_srcdir)/libcurvecpr/include -I$(top_srcdir)/libcurvecpr/test
-AM_CFLAGS = @CHECK_CFLAGS@
-LDADD = $(top_builddir)/libcurvecpr/lib/libcurvecpr.la @CHECK_LIBS@
+AM_CFLAGS = @CHECK_CFLAGS@ @LIBSODIUM_CFLAGS@
+LDADD = $(top_builddir)/libcurvecpr/lib/libcurvecpr.la @CHECK_LIBS@ @LIBSODIUM_LIBS@
 
 check_PROGRAMS =
 

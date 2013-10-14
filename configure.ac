@@ -26,8 +26,8 @@ PKG_PROG_PKG_CONFIG
 
 # Checks for libraries.
 PKG_CHECK_MODULES([CHECK], [check >= 0.9.8])
+PKG_CHECK_MODULES([LIBSODIUM], [libsodium >= 0.4.3])
 AC_SEARCH_LIBS([clock_gettime], [rt posix4])
-AC_CHECK_LIB([sodium], [sodium_init], [], [AC_MSG_ERROR([missing libsodium])])
 
 # Checks for header files.
 AC_HEADER_STDC
