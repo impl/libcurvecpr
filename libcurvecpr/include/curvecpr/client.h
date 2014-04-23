@@ -1,6 +1,10 @@
 #ifndef __CURVECPR_CLIENT_H
 #define __CURVECPR_CLIENT_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "session.h"
 
 #include <string.h>
@@ -49,5 +53,9 @@ void curvecpr_client_new (struct curvecpr_client *client, const struct curvecpr_
 int curvecpr_client_connected (struct curvecpr_client *client);
 int curvecpr_client_recv (struct curvecpr_client *client, const unsigned char *buf, size_t num);
 int curvecpr_client_send (struct curvecpr_client *client, const unsigned char *buf, size_t num);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
