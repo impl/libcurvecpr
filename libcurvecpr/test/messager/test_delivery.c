@@ -471,12 +471,12 @@ START_TEST (test_delivery)
     INITIALIZE(client, 1, client_delivery_latencies);
     
     for (i = 0; i < SEND_SIZE; i++)
-        /* send_data = "aBcDeFgH..." */
+        /* send_data = "aBcDeFgHiJ..." */
         send_data[i] = 'a' + (char)(i%26) + (char)(('A'-'a') * (i%2));
 
     curvecpr_bytes_zero(recv_data, SEND_SIZE);
     
-    add_to_send_queue(&client, send_data, sizeof(send_data));
+    add_to_send_queue(&client, send_data, SEND_SIZE);
     
     while (!(are_all_queues_empty(server_helper) && are_all_queues_empty(client_helper)))
     {
@@ -502,9 +502,9 @@ START_TEST (test_delivery)
             deliver_packet(client_helper, &server);
     }
     
-    fail_unless(get_received_size(server_helper) == sizeof(recv_data));
+    fail_unless(get_received_size(server_helper) == SEND_SIZE);
     get_received_data(server_helper, recv_data);
-    fail_unless(curvecpr_bytes_equal(send_data, recv_data, sizeof(send_data)));
+    fail_unless(curvecpr_bytes_equal(send_data, recv_data, SEND_SIZE));
     
     free(server_helper);
     free(client_helper);
