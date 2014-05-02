@@ -2,6 +2,7 @@
 #include <check_extras.h>
 
 #include <curvecpr/messager.h>
+#include <curvecpr/util.h>
 
 static char static_priv[] = "Hello!";
 
@@ -27,7 +28,8 @@ START_TEST (test_new_configures_object)
         .ops = {
             .sendmarkq_is_full = t_sendmarkq_is_full,
             .sendq_is_empty = t_sendq_is_empty,
-            .sendmarkq_head = t_sendmarkq_head
+            .sendmarkq_head = t_sendmarkq_head,
+            .get_nanoseconds = curvecpr_util_nanoseconds
         },
         .priv = static_priv
     };
