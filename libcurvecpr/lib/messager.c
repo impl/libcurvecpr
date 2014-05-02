@@ -523,6 +523,11 @@ long long curvecpr_messager_next_timeout (struct curvecpr_messager *messager)
 
         if (at > block->clock + chicago->rtt_timeout)
             at = block->clock + chicago->rtt_timeout;
+        
+        /* Writing faster than wr_rate does not make sense and will cause spinning. BUT, if
+           there is something to acknowledge, block might still be resent. */
+        if (cf->ops.recvmarkq_is_empty(messager) && at < messager->my_sent_clock + chicago->wr_rate)
+            at = messager->my_sent_clock + chicago->wr_rate;
     }
 
     if (chicago->clock > at)
