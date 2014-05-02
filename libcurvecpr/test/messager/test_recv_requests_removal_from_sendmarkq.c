@@ -4,6 +4,7 @@
 #include <curvecpr/messager.h>
 
 #include <curvecpr/bytes.h>
+#include <curvecpr/util.h>
 
 static unsigned char t_sendmarkq_is_full (struct curvecpr_messager *messager)
 {
@@ -36,7 +37,8 @@ START_TEST (test_recv_requests_removal_from_sendmarkq)
             .sendmarkq_is_full = t_sendmarkq_is_full,
             .sendq_is_empty = t_sendq_is_empty,
             .sendmarkq_head = t_sendmarkq_head,
-            .sendmarkq_remove_range = t_sendmarkq_remove_range
+            .sendmarkq_remove_range = t_sendmarkq_remove_range,
+            .get_nanoseconds = curvecpr_util_nanoseconds
         }
     };
     unsigned char buf[1024] = { 0 };

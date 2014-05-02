@@ -52,11 +52,17 @@ void curvecpr_messager_new (struct curvecpr_messager *messager, const struct cur
     curvecpr_bytes_zero(messager, sizeof(struct curvecpr_messager));
 
     /* Initialize configuration. */
-    if (cf)
-        curvecpr_bytes_copy(&messager->cf, cf, sizeof(struct curvecpr_messager_cf));
+    curvecpr_bytes_copy(&messager->cf, cf, sizeof(struct curvecpr_messager_cf));
 
     /* Initialize congestion handling. */
-    curvecpr_chicago_new(&messager->chicago);
+    struct curvecpr_chicago_ops chicago_ops = {
+        .get_nanoseconds = cf->ops.get_nanoseconds
+    };
+    struct curvecpr_chicago_cf chicago_cf = {
+        .ops = chicago_ops,
+        .priv = cf->priv
+    };
+    curvecpr_chicago_new(&messager->chicago, &chicago_cf);
 
     /* If we're in client mode, initiate packets have a maximum size of 512 bytes.
        Otherwise, we're in server mode, and we can start at 1024. */
