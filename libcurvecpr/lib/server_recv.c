@@ -171,6 +171,7 @@ static int _handle_initiate (struct curvecpr_server *server, struct curvecpr_ses
         /* All good, we can go ahead and submit the client for registration. */
         s_new.their_session_nonce = curvecpr_bytes_unpack_uint64(p->nonce);
         curvecpr_bytes_copy(s_new.my_domain_name, p_box->server_domain_name, 256);
+        curvecpr_bytes_copy(s_new.their_extension, p->client_extension, 16);
 
         if (cf->ops.put_session(server, &s_new, priv, &s_new_stored))
             return -EINVAL; /* This can fail for a variety of reasons that are up to
