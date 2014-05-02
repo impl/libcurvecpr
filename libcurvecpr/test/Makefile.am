@@ -21,4 +21,7 @@ messager_test_timeout_callback_fires_SOURCES = messager/test_timeout_callback_fi
 check_PROGRAMS += util/test_nanoseconds
 util_test_nanoseconds_SOURCES = util/test_nanoseconds.c
 
+check_PROGRAMS += packet_delivery/packet_delivery
+packet_delivery_packet_delivery_SOURCES = packet_delivery/packet_delivery.c
+
 TESTS = $(check_PROGRAMS)
