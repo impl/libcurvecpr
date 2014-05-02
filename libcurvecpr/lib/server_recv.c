@@ -161,7 +161,7 @@ static int _handle_initiate (struct curvecpr_server *server, struct curvecpr_ses
             curvecpr_bytes_zero(vouch, 16);
             curvecpr_bytes_copy(vouch + 16, p_box->vouch, 48);
 
-            if (crypto_box_afternm(vouch, vouch, 64, nonce, s_new.my_global_their_global_key))
+            if (crypto_box_open_afternm(vouch, vouch, 64, nonce, s_new.my_global_their_global_key))
                 return -EINVAL;
 
             if (!curvecpr_bytes_equal(vouch + 32, s_new.their_session_pk, 32))
