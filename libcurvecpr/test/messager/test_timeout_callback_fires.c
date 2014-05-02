@@ -2,6 +2,7 @@
 #include <check_extras.h>
 
 #include <curvecpr/messager.h>
+#include <curvecpr/util.h>
 
 long long test_timeout = -1LL;
 
@@ -67,7 +68,8 @@ START_TEST (test_timeout_callback_fires)
             .sendq_head = t_sendq_head,
             .send = t_send,
             .sendq_move_to_sendmarkq = t_sendq_move_to_sendmarkq,
-            .put_next_timeout = t_put_next_timeout
+            .put_next_timeout = t_put_next_timeout,
+            .get_nanoseconds = curvecpr_util_nanoseconds
         }
     };
 

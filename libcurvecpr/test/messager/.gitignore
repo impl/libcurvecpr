@@ -2,3 +2,4 @@
 /test_recv_requests_removal_from_sendmarkq
 /test_send_with_1_failure_moves_message_from_sendq
 /test_timeout_callback_fires
+/test_delivery

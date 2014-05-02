@@ -18,7 +18,13 @@ messager_test_send_with_1_failure_moves_message_from_sendq_SOURCES = messager/te
 check_PROGRAMS += messager/test_timeout_callback_fires
 messager_test_timeout_callback_fires_SOURCES = messager/test_timeout_callback_fires.c
 
+check_PROGRAMS += messager/test_delivery
+messager_test_delivery_SOURCES = messager/test_delivery.c
+
 check_PROGRAMS += util/test_nanoseconds
 util_test_nanoseconds_SOURCES = util/test_nanoseconds.c
+
+check_PROGRAMS += packet_delivery/packet_delivery
+packet_delivery_packet_delivery_SOURCES = packet_delivery/packet_delivery.c
 
 TESTS = $(check_PROGRAMS)
