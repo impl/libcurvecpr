@@ -1,6 +1,10 @@
 #ifndef __CURVECPR_BLOCK_H
 #define __CURVECPR_BLOCK_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <string.h>
 
 #include <sodium/crypto_uint32.h>
@@ -29,5 +33,9 @@ struct curvecpr_block {
     size_t data_len;
     unsigned char data[1024];
 };
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

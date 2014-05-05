@@ -1,6 +1,10 @@
 #ifndef __CURVECPR_SESSION_H
 #define __CURVECPR_SESSION_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <sodium/crypto_uint64.h>
 
 struct curvecpr_session {
@@ -36,5 +40,9 @@ struct curvecpr_session {
 void curvecpr_session_new (struct curvecpr_session *s);
 void curvecpr_session_next_nonce (struct curvecpr_session *s, unsigned char *destination);
 void curvecpr_session_set_priv (struct curvecpr_session *s, void *priv);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

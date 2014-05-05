@@ -1,6 +1,10 @@
 #ifndef __CURVECPR_PACKET_H
 #define __CURVECPR_PACKET_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct curvecpr_packet_any {
     unsigned char id[8];
     unsigned char server_extension[16];
@@ -66,5 +70,9 @@ struct curvecpr_packet_client_message {
     unsigned char nonce[8];
     /* A boxed message will follow. */
 };
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

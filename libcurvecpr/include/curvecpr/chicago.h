@@ -1,6 +1,10 @@
 #ifndef __CURVECPR_CHICAGO_H
 #define __CURVECPR_CHICAGO_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct curvecpr_chicago {
     long long clock;
 
@@ -30,5 +34,9 @@ void curvecpr_chicago_new (struct curvecpr_chicago *chicago);
 void curvecpr_chicago_refresh_clock (struct curvecpr_chicago *chicago);
 void curvecpr_chicago_on_timeout (struct curvecpr_chicago *chicago);
 void curvecpr_chicago_on_recv (struct curvecpr_chicago *chicago, long long ns_sent);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

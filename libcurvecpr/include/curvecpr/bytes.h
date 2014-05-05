@@ -1,6 +1,10 @@
 #ifndef __LIBCURVECPR_BYTES_H
 #define __LIBCURVECPR_BYTES_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <string.h>
 
 #include <sodium/crypto_uint16.h>
@@ -17,5 +21,9 @@ void curvecpr_bytes_pack_uint32 (unsigned char *destination, crypto_uint32 sourc
 crypto_uint32 curvecpr_bytes_unpack_uint32 (const unsigned char *source);
 void curvecpr_bytes_pack_uint64 (unsigned char *destination, crypto_uint64 source);
 crypto_uint64 curvecpr_bytes_unpack_uint64 (const unsigned char *source);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
