@@ -1,6 +1,10 @@
 #ifndef __CURVECPR_SERVER_H
 #define __CURVECPR_SERVER_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "session.h"
 
 #include <string.h>
@@ -41,5 +45,9 @@ void curvecpr_server_new (struct curvecpr_server *server, const struct curvecpr_
 void curvecpr_server_refresh_temporal_keys (struct curvecpr_server *server);
 int curvecpr_server_recv (struct curvecpr_server *server, void *priv, const unsigned char *buf, size_t num, struct curvecpr_session **s_stored);
 int curvecpr_server_send (struct curvecpr_server *server, struct curvecpr_session *s, void *priv, const unsigned char *buf, size_t num);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

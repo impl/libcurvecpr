@@ -1,6 +1,10 @@
 #ifndef __CURVECPR_MESSAGER_H
 #define __CURVECPR_MESSAGER_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "block.h"
 #include "chicago.h"
 
@@ -70,5 +74,9 @@ void curvecpr_messager_new (struct curvecpr_messager *messager, const struct cur
 int curvecpr_messager_recv (struct curvecpr_messager *messager, const unsigned char *buf, size_t num);
 int curvecpr_messager_process_sendq (struct curvecpr_messager *messager);
 long long curvecpr_messager_next_timeout (struct curvecpr_messager *messager);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
