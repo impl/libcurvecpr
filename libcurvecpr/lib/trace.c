@@ -28,6 +28,11 @@ void curvecpr_trace_set_callback (void (*callback)(enum curvecpr_trace_level lev
     trace_callback = callback;
 }
 
+#ifdef __has_attribute
+#if __has_attribute(format)
+__attribute__ ((__format__ (__printf__, 5, 0)))
+#endif
+#endif
 void curvecpr_trace_stderr_cb (enum curvecpr_trace_level level, const char *file, int line, const char *func, const char *format, va_list args)
 {
     long long trace_time = curvecpr_util_nanoseconds();
