@@ -5,6 +5,7 @@
 #include <curvecpr/block.h>
 #include <curvecpr/bytes.h>
 #include <curvecpr/chicago.h>
+#include <curvecpr/trace.h>
 
 #include <errno.h>
 #include <stdint.h>
@@ -441,18 +442,25 @@ int curvecpr_messager_process_sendq (struct curvecpr_messager *messager)
     curvecpr_chicago_refresh_clock(chicago);
 
     /* Should we send a block? */
-    if (!cf->ops.recvmarkq_is_empty(messager))
+    if (!cf->ops.recvmarkq_is_empty(messager)) {
         /* Always acknowledge any received data immediately -- not doing so messes up the
            RTT calculations for flow control. */
+        CURVECPR_TRACE_DEBUG("recvmarkq is not empty: acknowledging");
         acknowledge = 1;
+    }
 
-    if (chicago->clock >= messager->my_sent_clock + chicago->wr_rate)
+    CURVECPR_TRACE_DEBUG("testing chicago->clock(%lld) >= messager->my_sent_clock(%lld) + chicago->wr_rate(%d)", chicago->clock, messager->my_sent_clock, chicago->wr_rate);
+    if (chicago->clock >= messager->my_sent_clock + chicago->wr_rate) {
         /* Clock time is up! */
+        CURVECPR_TRACE_DEBUG("clock is expired: sending messages");
         bytes = 1;
-    if (cf->ops.sendmarkq_is_full(messager))
+    }
+    if (cf->ops.sendmarkq_is_full(messager)) {
         /* But the pending-acknowledgment queue is full, so we have to wait for the other
            side to reply before we send anything else. */
+        CURVECPR_TRACE_DEBUG("sendmarkq is full: cannot send any messages");
         bytes = 0;
+    }
 
     if (!acknowledge && !bytes)
         return -EAGAIN;
@@ -460,10 +468,13 @@ int curvecpr_messager_process_sendq (struct curvecpr_messager *messager)
     /* OK, we should. Maybe we have a block that needs to be resent? */
     if (cf->ops.sendmarkq_head(messager, &block)) {
         /* No block to send here. */
+        CURVECPR_TRACE_DEBUG("no messages in the sendmarkq");
     } else {
-        if (chicago->clock >= block->clock + chicago->rtt_timeout)
+        if (chicago->clock >= block->clock + chicago->rtt_timeout) {
             /* Timeout! Resend this block. */
+            CURVECPR_TRACE_DEBUG("resending block(%p) with block->clock(%lld) + chicago->rtt_timeout(%d) = %lld", block, block->clock, chicago->rtt_timeout, block->clock + chicago->rtt_timeout);
             return _send_block(messager, block);
+        }
     }
 
     /* Do we have a new block that we can send instead? (If we're at EOF, we won't even
@@ -471,13 +482,16 @@ int curvecpr_messager_process_sendq (struct curvecpr_messager *messager)
     if (bytes && !messager->my_eof) {
         if (cf->ops.sendq_head(messager, &block)) {
             /* No block to send here, either. */
+            CURVECPR_TRACE_DEBUG("no messages in the sendq");
         } else {
             /* New block! */
+            CURVECPR_TRACE_DEBUG("sending block(%p)", block);
             return _send_block(messager, block);
         }
     }
 
     /* We've got nothing, so just send acknowledgments. */
+    CURVECPR_TRACE_DEBUG("sending acknowledgments");
     return _send_block(messager, NULL);
 }
 
@@ -497,31 +511,47 @@ long long curvecpr_messager_next_timeout (struct curvecpr_messager *messager)
     curvecpr_chicago_refresh_clock(chicago);
 
     at = chicago->clock + 60000000000LL; /* 60 seconds. */
+    CURVECPR_TRACE_DEBUG("checking next timeout (chicago->clock: %lld)", chicago->clock);
 
     if (!cf->ops.sendmarkq_is_full(messager)) {
+        CURVECPR_TRACE_DEBUG("sendmarkq is not full");
+
         /* If we have pending data, we might write it. */
         if (!cf->ops.sendq_is_empty(messager)) {
+            CURVECPR_TRACE_DEBUG("sendq is not empty");
+
             would_spin = 0;
 
             /* Write at the write rate. */
-            if (at > messager->my_sent_clock + chicago->wr_rate)
+            if (at > messager->my_sent_clock + chicago->wr_rate) {
                 at = messager->my_sent_clock + chicago->wr_rate;
+                CURVECPR_TRACE_DEBUG("sendq is not empty: set timer to messager->my_sent_clock(%lld) + chicago->wr_rate(%d): %lld",
+                    messager->my_sent_clock, chicago->wr_rate, at);
+            }
         }
     }
 
     /* If we have a sent block, we might trigger too. */
     if (cf->ops.sendmarkq_head(messager, &block)) {
+        CURVECPR_TRACE_DEBUG("sendmarkq is empty");
         /* No earliest block. */
     } else {
+        CURVECPR_TRACE_DEBUG("sendmarkq is not empty (head block->clock: %lld, chicago->rtt_timeout: %d)", block->clock, chicago->rtt_timeout);
+
         would_spin = 0;
 
-        if (at > block->clock + chicago->rtt_timeout)
+        if (at > block->clock + chicago->rtt_timeout) {
             at = block->clock + chicago->rtt_timeout;
+            CURVECPR_TRACE_DEBUG("sendmarkq is not empty: set timer to block->clock + chicago->rtt_timeout: %lld", at);
+        }
 
         /* Writing faster than wr_rate does not make sense and will cause spinning. BUT, if
            there is something to acknowledge, block might still be resent. */
-        if (cf->ops.recvmarkq_is_empty(messager) && at < messager->my_sent_clock + chicago->wr_rate)
+        if (cf->ops.recvmarkq_is_empty(messager) && at < messager->my_sent_clock + chicago->wr_rate) {
             at = messager->my_sent_clock + chicago->wr_rate;
+            CURVECPR_TRACE_DEBUG("sendmarkq is not empty: recvmarkq is empty: set timer to messager->my_sent_clock(%lld) + chicago->wr_rate(%d): %lld",
+                messager->my_sent_clock, chicago->wr_rate, at);
+        }
     }
 
     if (chicago->clock > at)

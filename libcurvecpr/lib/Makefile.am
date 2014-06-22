@@ -14,4 +14,5 @@ libcurvecpr_la_SOURCES = \
     server_recv.c \
     server_send.c \
     session.c \
+    trace.c \
     util.c

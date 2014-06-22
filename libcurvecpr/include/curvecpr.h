@@ -9,6 +9,7 @@
 #include <curvecpr/packet.h>
 #include <curvecpr/server.h>
 #include <curvecpr/session.h>
+#include <curvecpr/trace.h>
 #include <curvecpr/util.h>
 
 #endif

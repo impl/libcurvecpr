@@ -7,5 +7,6 @@ nobase_include_HEADERS = \
     curvecpr/packet.h \
     curvecpr/server.h \
     curvecpr/session.h \
+    curvecpr/trace.h \
     curvecpr/util.h \
     curvecpr.h
