@@ -15,11 +15,15 @@ void curvecpr_trace_enable (enum curvecpr_trace_level level);
 void curvecpr_trace_disable (void);
 void curvecpr_trace_set_callback (void (*callback)(enum curvecpr_trace_level level, const char *file, int line, const char *func, const char *format, va_list args));
 
-static inline void curvecpr_trace_noop_cb (enum curvecpr_trace_level level, const char *file, int line, const char *func, const char *format, va_list args)
+static __inline void curvecpr_trace_noop_cb (enum curvecpr_trace_level level, const char *file, int line, const char *func, const char *format, va_list args)
 {
     /* Do nothing. */
 }
 void curvecpr_trace_stderr_cb (enum curvecpr_trace_level level, const char *file, int line, const char *func, const char *format, va_list args);
+
+#if defined ( WIN32 )
+#define __func__ __FUNCTION__
+#endif
 
 void curvecpr_trace (enum curvecpr_trace_level level, const char *file, int line, const char *func, const char *format, ...);
 #define CURVECPR_TRACE(level, ...) curvecpr_trace((level), __FILE__, __LINE__, __func__, __VA_ARGS__)
