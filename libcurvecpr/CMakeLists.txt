@@ -49,7 +49,8 @@ SET(libcurvecpr_headers
 	include/curvecpr/trace.h
 	include/curvecpr/util.h)
 
-INSTALL(FILES ${libcurvecpr_headers} DESTINATION include)
+INSTALL(DIRECTORY include/curvecpr DESTINATION include)
+INSTALL(FILES include/curvecpr.h DESTINATION include)
 
 ########################################################################
 # library
