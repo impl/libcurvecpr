@@ -61,7 +61,12 @@ long long curvecpr_util_nanoseconds (void)
 
     if (clock_get_time(cclock, &t) != KERN_SUCCESS)
         return -1;
-#else
+#elif defined(CLOCK_MONOTONIC)
+    struct timespec t;
+
+    if (clock_gettime(CLOCK_MONOTONIC, &t) != 0)
+        return -1;
+#elif defined(CLOCK_REALTIME)
     struct timespec t;
 
     if (clock_gettime(CLOCK_REALTIME, &t) != 0)
