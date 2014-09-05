@@ -8,14 +8,14 @@ START_TEST (test_nanoseconds)
     long long nanoseconds = curvecpr_util_nanoseconds();
 
     fail_if(nanoseconds < 0);
-    fail_unless(nanoseconds > 1374047000000000000LL);
+    fail_unless(nanoseconds > 0);
 
     /* On OS X, we may cache the kernel clock reference. Make sure it still
        works. */
-    nanoseconds = curvecpr_util_nanoseconds();
+    long long nanoseconds1 = curvecpr_util_nanoseconds();
 
-    fail_if(nanoseconds < 0);
-    fail_unless(nanoseconds > 1374047000000000000LL);
+    fail_if(nanoseconds1 < 0);
+    fail_unless(nanoseconds1 > nanoseconds);
 }
 END_TEST
 
