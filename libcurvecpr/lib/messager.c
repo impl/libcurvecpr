@@ -109,13 +109,8 @@ int curvecpr_messager_recv (struct curvecpr_messager *messager, const unsigned c
         /* Range 1. */
         start = 0;
         end = curvecpr_bytes_unpack_uint64(message->acknowledging_range_1_size);
-        if (start - end > 0) {
+        if (start - end > 0)
             cf->ops.sendmarkq_remove_range(messager, start, end);
-
-            /* If we're at EOF, see if we can move to a final state. */
-            if (messager->my_eof && end >= messager->my_sent_bytes)
-                messager->my_final = 1;
-        }
 
         /* Range 2. */
         start = end + (unsigned long long)curvecpr_bytes_unpack_uint32(message->acknowledging_range_12_gap);
@@ -146,6 +141,11 @@ int curvecpr_messager_recv (struct curvecpr_messager *messager, const unsigned c
         end = start + (unsigned long long)curvecpr_bytes_unpack_uint16(message->acknowledging_range_6_size);
         if (start - end > 0)
             cf->ops.sendmarkq_remove_range(messager, start, end);
+
+        /* If we're at EOF, see if we can move to a final state. */
+        struct curvecpr_block block;
+        if (messager->my_eof && cf->ops.sendmarkq_head(messager, &block) == -1)
+            messager->my_final = 1;
     }
 
     /* Read size and flags and dispatch data to delegate. */
