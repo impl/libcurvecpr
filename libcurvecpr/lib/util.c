@@ -34,7 +34,7 @@ long long curvecpr_util_random_mod_n (long long n)
 
 /* XXX: Y2036 problems; should upgrade to a 128-bit type for this. */
 /* XXX: Nanosecond granularity limits users to 1 terabyte per second. */
-long long curvecpr_util_nanoseconds (void)
+long long curvecpr_util_nanoseconds (void *priv)
 {
     /* XXX: host_get_clock_service() has been officially deprecated for years;
        this may need to be updated in the future. */

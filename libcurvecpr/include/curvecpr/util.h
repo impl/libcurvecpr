@@ -6,7 +6,7 @@ extern "C" {
 #endif
 
 long long curvecpr_util_random_mod_n (long long n);
-long long curvecpr_util_nanoseconds (void);
+long long curvecpr_util_nanoseconds (void *);
 int curvecpr_util_encode_domain_name (unsigned char *destination, const char *source);
 
 #ifdef __cplusplus

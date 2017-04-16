@@ -161,7 +161,7 @@ static int _handle_initiate (struct curvecpr_server *server, struct curvecpr_ses
             curvecpr_bytes_zero(vouch, 16);
             curvecpr_bytes_copy(vouch + 16, p_box->vouch, 48);
 
-            if (crypto_box_afternm(vouch, vouch, 64, nonce, s_new.my_global_their_global_key))
+            if (crypto_box_open_afternm(vouch, vouch, 64, nonce, s_new.my_global_their_global_key))
                 return -EINVAL;
 
             if (!curvecpr_bytes_equal(vouch + 32, s_new.their_session_pk, 32))
@@ -171,6 +171,7 @@ static int _handle_initiate (struct curvecpr_server *server, struct curvecpr_ses
         /* All good, we can go ahead and submit the client for registration. */
         s_new.their_session_nonce = curvecpr_bytes_unpack_uint64(p->nonce);
         curvecpr_bytes_copy(s_new.my_domain_name, p_box->server_domain_name, 256);
+        curvecpr_bytes_copy(s_new.their_extension, p->client_extension, 16);
 
         if (cf->ops.put_session(server, &s_new, priv, &s_new_stored))
             return -EINVAL; /* This can fail for a variety of reasons that are up to

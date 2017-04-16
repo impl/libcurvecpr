@@ -9,6 +9,8 @@
 
 #include <sodium/crypto_box.h>
 
+#include <errno.h>
+
 static const unsigned char _zeros[128] = { 0 };
 
 void curvecpr_client_new (struct curvecpr_client *client, const struct curvecpr_client_cf *cf)
@@ -70,7 +72,8 @@ int curvecpr_client_connected (struct curvecpr_client *client)
         curvecpr_bytes_copy(p.box, data + 16, 80);
     }
 
-    cf->ops.send(client, (const unsigned char *)&p, sizeof(struct curvecpr_packet_hello));
+    if (cf->ops.send(client, (const unsigned char *)&p, sizeof(struct curvecpr_packet_hello)))
+        return -EAGAIN;
 
     return 0;
 }

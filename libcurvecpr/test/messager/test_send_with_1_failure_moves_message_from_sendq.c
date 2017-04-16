@@ -2,6 +2,7 @@
 #include <check_extras.h>
 
 #include <curvecpr/messager.h>
+#include <curvecpr/util.h>
 
 static struct curvecpr_block static_block = {
     .id = 0,
@@ -74,7 +75,8 @@ START_TEST (test_send_with_1_failure_moves_message_from_sendq)
             .sendmarkq_head = t_sendmarkq_head,
             .sendq_head = t_sendq_head,
             .send = t_send,
-            .sendq_move_to_sendmarkq = t_sendq_move_to_sendmarkq
+            .sendq_move_to_sendmarkq = t_sendq_move_to_sendmarkq,
+            .get_nanoseconds = curvecpr_util_nanoseconds
         },
         .priv = &send_counter
     };

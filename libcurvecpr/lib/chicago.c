@@ -123,9 +123,12 @@ static void _update_on_timeout (struct curvecpr_chicago *chicago)
     }
 }
 
-void curvecpr_chicago_new (struct curvecpr_chicago *chicago)
+void curvecpr_chicago_new (struct curvecpr_chicago *chicago, const struct curvecpr_chicago_cf *cf)
 {
     curvecpr_bytes_zero(chicago, sizeof(struct curvecpr_chicago));
+
+    if (cf)
+        curvecpr_bytes_copy(&chicago->cf, cf, sizeof(struct curvecpr_chicago_cf));
 
     curvecpr_chicago_refresh_clock(chicago);
 
@@ -153,7 +156,7 @@ void curvecpr_chicago_new (struct curvecpr_chicago *chicago)
 
 void curvecpr_chicago_refresh_clock (struct curvecpr_chicago *chicago)
 {
-    chicago->clock = curvecpr_util_nanoseconds();
+    chicago->clock = chicago->cf.ops.get_nanoseconds(chicago->cf.priv);
 }
 
 void curvecpr_chicago_on_timeout (struct curvecpr_chicago *chicago)
